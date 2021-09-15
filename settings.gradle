@@ -1,2 +1,3 @@
 include ':app'
+include ':umeng'
 rootProject.name = "honeycom-saas-app"
