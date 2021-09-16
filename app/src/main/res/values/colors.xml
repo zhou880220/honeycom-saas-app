@@ -3,4 +3,29 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+
+
+    <color name="contents_text">#ff000000</color>
+    <color name="encode_view">#ffffffff</color>
+    <color name="possible_result_points">#c0ffbd21</color>
+    <color name="result_minor_text">#ffc0c0c0</color>
+    <color name="result_points">#c099cc00</color>
+    <color name="result_text">#ffffffff</color>
+    <color name="result_view">#b0000000</color>
+    <color name="status_text">#ffffffff</color>
+    <color name="transparent">#00000000</color>
+    <color name="viewfinder_laser">#ffcc0000</color>
+    <color name="viewfinder_mask">#50000000</color>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <color name="colorError">#FFFFFF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="text_color_false">#000000</color>
+    <color name="black">#000000</color>
+
+    <color name="text_backcolor_true">#2F83FF</color>
+    <color name="blue">#5cabfa</color>
+    <color name="titleBar">#2393fc</color>
+
 </resources>
