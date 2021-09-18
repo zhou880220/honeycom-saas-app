@@ -529,6 +529,7 @@ public class MainActivity  extends BaseActivity {
         });
     }
 
+
     /**
      * 跳转到照相机
      */
