@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorError">
+
+    <!--加载网页错误的提示图-->
+    <ImageView
+        android:id="@+id/error_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:contentDescription="@null"
+        android:src="@drawable/network_error" />
+
+    <TextView
+        android:id="@+id/reload_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/error_iv"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/web_error"/>
+
+</RelativeLayout>

@@ -51,13 +51,36 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".StartPageActivity">
+        <activity android:name=".StartPageActivity" android:theme="@style/AppThemeTwo" android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.activity.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustNothing|adjustPan|adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="zzy"
+                    android:path="/home"
+                    android:port="8080"
+                    android:scheme="test" />
+            </intent-filter>
+        </activity>
+
+
+        <activity android:name=".ui.activity.ReminderActivity" />
+
     </application>
 
 </manifest>
