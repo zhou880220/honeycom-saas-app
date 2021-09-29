@@ -82,6 +82,8 @@ public class Constant {
 
     public static final String HAS_UDATE = "has_update";
 
+    public static final  String CODED_CONTENT = "codedContent";
+
 
     public static String[] getCurrentDomain() {
         String page_head = "";

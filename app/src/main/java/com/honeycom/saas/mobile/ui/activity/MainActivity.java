@@ -116,6 +116,9 @@ public class MainActivity  extends BaseActivity {
     protected void initWidget() {
         super.initWidget();
 
+        //加载页面
+        webView(Constant.text_url);
+
         myHandler.postDelayed(new Runnable() {
             @Override
             public void run() {

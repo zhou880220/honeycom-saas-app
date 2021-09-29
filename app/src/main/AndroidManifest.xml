@@ -81,6 +81,8 @@
 
         <activity android:name=".ui.activity.ReminderActivity" />
 
+        <activity android:name=".ui.activity.ExecuteActivity" />
+
     </application>
 
 </manifest>

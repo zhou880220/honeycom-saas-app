@@ -13,5 +13,7 @@
     <external-cache-path  path="files" name="externalcache"/>
     <!-- 物理路径为`Context.getExternalMediaDirs() + /files/..., 要求API21+ -->
     <external-media-path name="externalmedia" path="files" />
+
+    <external-path name="external_files" path="."/>
     <root-path name="root_path" path="."/>
 </paths>
