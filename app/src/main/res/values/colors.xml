@@ -28,4 +28,6 @@
     <color name="blue">#5cabfa</color>
     <color name="titleBar">#2393fc</color>
 
+    <color name="status_layout_manager_tip_text_color">#BFBFBF</color>
+
 </resources>

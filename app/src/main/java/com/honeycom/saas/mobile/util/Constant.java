@@ -5,8 +5,10 @@ public class Constant {
     /**
      * 测试环境前缀
      * 页面前缀 ：https://njtestyyzxpad.zhizaoyun.com/
-     * 接口前缀 ：https://njtesthoneycomb.zhizaoyun.com/gateway/
+     * 接口前缀 ：http://mestestapik8s.zhizaoyun.com:31008  "https://h5-prod.zhizaoyun.com/app-miota-v1/";//
      */
+    public static final String PAGE_URL = "http://172.16.41.239:9542/app";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
+    public static final String INTERFACE_URL =  "http://mestestapik8s.zhizaoyun.com:31008";
 
     /**
      * 生产环境前缀
@@ -29,8 +31,8 @@ public class Constant {
 //    public static final String PAGE_URL = "http://172.16.23.59:3002/";//"https://njtestyyzx.zhizaoyun.com/";//"https://mobileclientthird.zhizaoyun.com/";
 //    public static final String INTERFACE_URL = "http://172.16.14.231:18080/";//"https://mobileclientthird.zhizaoyun.com/gateway/";
 
-    public static final String PAGE_URL = String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
-    public static final String INTERFACE_URL =  String.format("https://%s.zhizaoyun.com/gateway/", getCurrentDomain()[1]);
+//    public static final String PAGE_URL = String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
+//    public static final String INTERFACE_URL =  String.format("https://%s.zhizaoyun.com/gateway/", getCurrentDomain()[1]);
     public static final String equipmentId = "2";
 
 
@@ -46,7 +48,7 @@ public class Constant {
     public static final String QQ_APP_ID = "1110555495";
     //以下为页面前缀
     public static final String locahost_url = PAGE_URL + "cashierDesk"; //路径前缀  "http://172.16.23.116:3001/"
-    public static final String text_url = PAGE_URL + "home/desk"; //用户首页
+    public static final String text_url = PAGE_URL; //用户首页
     public static final String login_url = PAGE_URL + "login"; //登录页
     public static final String apply_url = PAGE_URL + "apply"; //用户中心
     public static final String register_url = PAGE_URL + "register"; //用户注册

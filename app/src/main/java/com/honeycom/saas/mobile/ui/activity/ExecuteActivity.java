@@ -206,7 +206,7 @@ public class ExecuteActivity extends BaseActivity {
     protected void initData(Bundle savedInstanceState) {
         super.initData(savedInstanceState);
         mContext = this;
-
+        Log.i(TAG, "initData: execute");
         Intent intent = getIntent();
         url = intent.getStringExtra("url");
         token = intent.getStringExtra("token");
@@ -961,12 +961,12 @@ public class ExecuteActivity extends BaseActivity {
         startActivityForResult(intent, REQUEST_CAPTURE);
     }
 
-    /**
-     * 第三方插件下载
-     * @param fileLoad
-     * @param downPath
-     */
-    private void downFilePath(String fileLoad, String downPath) {
+//    /**
+//     * 第三方插件下载
+//     * @param fileLoad
+//     * @param downPath
+//     */
+//    private void downFilePath(String fileLoad, String downPath) {
 //        FileDownloader.setup(mContext);
 //        FileDownloader.getImpl().create(downPath)
 //                .setPath(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + fileLoad + BaseUtils.getNameFromUrl(downPath))
@@ -1022,7 +1022,7 @@ public class ExecuteActivity extends BaseActivity {
 //                    }
 //                }).start();
 
-    }
+//    }
 
 //    /**
 //     * 判断微信是否安装
