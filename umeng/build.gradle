@@ -18,7 +18,13 @@ android {
                 // 微信 AppId
                 'WX_APPID' : 'wxd35706cc9f46114c',
                 // 微信 AppKey
-                'WX_APPKEY' : '0c8c7cf831dd135a32b3e395ea459b5a'
+                'WX_APPKEY' : '0c8c7cf831dd135a32b3e395ea459b5a',
+                //app key
+                'Appkey' : '6139b8635f798a55cafbe41d',
+                //Umeng Message Secret
+                'UMENG_MESSAGE_SECRET' : '612fcad1a6a26d76af9a087b624fb4ea',
+                //App Master Secret
+                'MessageSecret' : '612fcad1a6a26d76af9a087b624fb4ea'
         ]
     }
 }
@@ -27,16 +33,9 @@ android {
 dependencies {
     // 友盟基础组件：https://bintray.com/umsdk/release/common
     // 友盟统计SDK
-    implementation  'com.umeng.umsdk:common:9.4.4'// 必选
-    implementation  'com.umeng.umsdk:asms:1.4.1'// 必选
-    implementation 'com.umeng.umsdk:apm:1.5.2' // 错误分析升级为独立SDK，看crash数据请一定
-
-    // 友盟社会化：https://bintray.com/umsdk/release/share-core
-//    implementation 'com.umeng.umsdk:share-core:7.1.0'
-    // QQ SDK：https://bintray.com/umsdk/release/share-qq
-//    implementation 'com.umeng.umsdk:share-qq:7.1.0'
-    // 微信 SDK：https://bintray.com/umsdk/release/share-wx
-//    implementation 'com.umeng.umsdk:share-wx:7.1.0'
+    api  'com.umeng.umsdk:common:9.4.4'// 必选
+    api  'com.umeng.umsdk:asms:1.4.1'// 必选
+    api 'com.umeng.umsdk:apm:1.5.2' // 错误分析升级为独立SDK，看crash数据请一定
 
     implementation  'com.umeng.umsdk:share-core:7.1.6'//分享核心库，必选
     implementation  'com.umeng.umsdk:share-board:7.1.6'//分享面板功能，可选
@@ -47,4 +46,6 @@ dependencies {
     implementation 'com.umeng.umsdk:share-qq:7.1.6'//QQ完整版
     implementation 'com.tencent.tauth:qqopensdk:3.53.0'//QQ官方依赖库，必选
     implementation 'com.squareup.okhttp3:okhttp:3.12.12'//QQ SDK在3.53.0版本及以上时需要集成
+
+    api 'com.umeng.umsdk:push:6.4.5' //友盟Push依赖
 }

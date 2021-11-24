@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -40,10 +41,15 @@ import com.google.gson.Gson;
 import com.honeycom.saas.mobile.App;
 import com.honeycom.saas.mobile.BuildConfig;
 import com.honeycom.saas.mobile.R;
+import com.honeycom.saas.mobile.StartPageActivity;
 import com.honeycom.saas.mobile.base.BaseActivity;
+import com.honeycom.saas.mobile.http.CallBackUtil;
+import com.honeycom.saas.mobile.http.OkhttpUtil;
 import com.honeycom.saas.mobile.http.UpdateAppHttpUtil;
 import com.honeycom.saas.mobile.http.bean.BrowserBean;
+import com.honeycom.saas.mobile.http.bean.UserInfoBean;
 import com.honeycom.saas.mobile.http.bean.VersionInfo;
+import com.honeycom.saas.mobile.util.CacheDataManager;
 import com.honeycom.saas.mobile.util.CleanDataUtils;
 import com.honeycom.saas.mobile.util.Constant;
 import com.honeycom.saas.mobile.util.SPUtils;
@@ -59,10 +65,13 @@ import com.yzq.zxinglibrary.android.CaptureActivity;
 import com.yzq.zxinglibrary.bean.ZxingConfig;
 
 import java.io.File;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import butterknife.BindView;
+import okhttp3.Call;
 
 /**
 * author : zhoujr
@@ -112,6 +121,8 @@ public class MainActivity  extends BaseActivity {
     //调用照相机返回图片文件
     private File tempFile;
 
+    private String userToken;
+
     private MyHandlerCallBack.OnSendDataListener mOnSendDataListener;
     private MWebChromeClient myChromeWebClient;
     private WebSettings webSettings;
@@ -145,12 +156,12 @@ public class MainActivity  extends BaseActivity {
         }
 
         //加载页面
-        webView(Constant.text_url);
+        webView(Constant.text_url+"?r="+new Date().getTime());
 
         myHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-//                updateApp();
+                updateApp();
             }
         }, 5000);
     }
@@ -303,7 +314,7 @@ public class MainActivity  extends BaseActivity {
                         Log.e(TAG, "onKey: web back  2"+myOrder);
 //                        SharedPreferences sb = getSharedPreferences("userInfoSafe", MODE_PRIVATE);
 //                        String userInfo = sb.getString("userInfo", "");
-                        if (myOrder.contains("/app/home")) { //首页拦截物理返回键  直接关闭应用
+                        if (myOrder.contains("/home")) { //首页拦截物理返回键  直接关闭应用
                             exit();
                         } else if (myOrder.contains("/information")) { //确保从该页面返回的是首页
                             webView(Constant.text_url);
@@ -358,6 +369,7 @@ public class MainActivity  extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 try {
                     Log.e(TAG, "isInSurface: " + data);
+                    function.onCallBack("true");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -387,9 +399,7 @@ public class MainActivity  extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 try {
                     if (ChaceSize == true) {
-                        if (!totalCacheSize.isEmpty()) {
-                            function.onCallBack(totalCacheSize);
-                        }
+                            function.onCallBack(CleanDataUtils.getTotalCacheSize(mContext));
                     } else {
                         function.onCallBack("0.00MB");
                     }
@@ -489,10 +499,50 @@ public class MainActivity  extends BaseActivity {
                     Log.e(TAG, "获取用户登录信息: " + data);
                     if (!data.isEmpty()) {
                         SPUtils.getInstance().put("userInfo", data);
+                        //绑定推送deviceToken
+                        UserInfoBean userInfoBean = new Gson().fromJson(data, UserInfoBean.class);
+                        if (userInfoBean !=null && !TextUtils.isEmpty(userInfoBean.getCompanyId())) {
+                            userToken = userInfoBean.getAccessToken();
+                            String deviceToken = (String) SPUtils.getInstance().get("deviceToken","");
+                            sendDeviceToken(deviceToken);
+                        }
+                        function.onCallBack("success");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        //记住密码功能(设置登录信息)
+        mNewWeb.registerHandler("saveLoginInfo", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "handler = saveLoginInfo, data from web = " + data);
+                if (!TextUtils.isEmpty(data)) {
+                    SPUtils.getInstance().put("loginData", data);
+                    function.onCallBack("android receive success");
+                }
+            }
+        });
+
+
+//        获取登录信息
+        mNewWeb.registerHandler("getLoginInfo", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                String _data = (String)SPUtils.getInstance().get("loginData", "");
+                Log.e(TAG, "_loginData : "+_data);
+                function.onCallBack(_data);
+            }
+        });
+
+//        清除登录信息
+        mNewWeb.registerHandler("clearLoginInfo", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                SPUtils.getInstance().remove("loginData");
+                function.onCallBack("android clear loginData success");
             }
         });
 
@@ -501,11 +551,10 @@ public class MainActivity  extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 try {
-                    SharedPreferences sb = getSharedPreferences("userInfoSafe", MODE_PRIVATE);
-                    String userInfo = sb.getString("userInfo", "");
-                    Log.e("saas", userInfo);
+                    String userInfo = (String) SPUtils.getInstance().get("userInfo", "");
+                    Log.e(TAG, userInfo);
                     if (!userInfo.isEmpty()) {
-                        function.onCallBack(sb.getString("userInfo", ""));
+                        function.onCallBack(userInfo);
                     } else {
 
                     }
@@ -526,23 +575,31 @@ public class MainActivity  extends BaseActivity {
 //                        String _redirectUrl = (String) map.get("redirectUrl");//"https://mobileclientthird.zhizaoyun.com/jsapi/view/api.html";//
 //                        Map<String,String> reqMap = BaseUtils.urlSplit(_redirectUrl);
                         String redirectUrl = (String) map.get("redirectUrl");//"http://172.16.41.239:3001/equipment/app/home?access_token="+reqMap.get("access_token");//
-                        String currentUrl = mNewWeb.getUrl();
-                        Log.e(TAG, "currentUrl: "+currentUrl );
+//                        String currentUrl = mNewWeb.getUrl();
+                        Log.e(TAG, "redirectUrl: "+redirectUrl );
                         if (!redirectUrl.isEmpty()) {
                             Intent intent;
-                            //设备app单独跳转一个页面
-                            if (redirectUrl.contains("execute/app")) {
+                            //生成app单独跳转一个页面
+                            if (redirectUrl.contains("/p/")) {
                                 intent = new Intent(MainActivity.this, ExecuteActivity.class);
+                                if (redirectUrl.contains("?")) {
+                                    redirectUrl = redirectUrl +"&r="+new Date().getTime();
+                                }else {
+                                    redirectUrl = redirectUrl +"?r="+new Date().getTime();
+                                }
                                 intent.putExtra("url", redirectUrl);
 //                                intent.putExtra("token", usertoken1);
 //                                intent.putExtra("userid", userid1);
 //                                intent.putExtra("appId", appId);
-                                intent.putExtra("zxIdTouTiao", zxIdTouTiao);
-                                intent.putExtra("isFromHome", currentUrl.contains("apply") ? "0": "1");
+//                                intent.putExtra("zxIdTouTiao", zxIdTouTiao);
+//                                intent.putExtra("isFromHome", currentUrl.contains("apply") ? "0": "1");
+                                startActivity(intent);
+                            }else {
+                                //其他系统待定
+                                intent = new Intent(MainActivity.this, ExecuteActivity.class);
+                                intent.putExtra("url", redirectUrl);
                                 startActivity(intent);
                             }
-
-
                         }
 
                     }
@@ -663,6 +720,53 @@ public class MainActivity  extends BaseActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        /**
+         * 隐私条款与用户协议跳转
+         */
+        mNewWeb.registerHandler("toPolicy", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                try {
+                    if (!data.isEmpty()) {
+                        Map map = new Gson().fromJson(data, Map.class);
+                        String type = (String) map.get("type");
+                        Intent intent = new Intent(MainActivity.this, ReminderActivity.class);
+                        intent.putExtra("type", type);
+                        startActivity(intent);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void sendDeviceToken(String deviceToken){
+        Map<String, String> headerMap =  new HashMap<>();
+        headerMap.put("authorization", "Bearer "+userToken);
+        Map<String, String> paramsMap =  new HashMap<>();
+        paramsMap.put("deviceToken", deviceToken);
+        paramsMap.put("deviceType", "android");
+        String jsonStr = new Gson().toJson(paramsMap);
+        Log.e(TAG, "jsonStr: "+jsonStr);
+        OkhttpUtil.okHttpPostJson(Constant.userPushRelation, jsonStr, headerMap, new CallBackUtil.CallBackString() {
+            @Override
+            public void onFailure(Call call, Exception e) {
+                Log.e(TAG, "onFailure: "+e.getMessage());
+            }
+
+            @Override
+            public void onResponse(String response) {
+                Log.e(TAG, "-----onResponse: " + response);
+//                Result result = new Gson().fromJson(response, Result.class);
+//                if (result.getCode() == 200) {
+//                    SPUtils.getInstance().put(Constant.HAS_INSTALL, "1");
+//                } else {
+//                    Log.e("StartPageActivity", "服务器系统异常");
+//                }
             }
         });
     }
@@ -839,6 +943,10 @@ public class MainActivity  extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 10 && resultCode == 2) {//通过请求码和返回码区分不同的返回
+            String apply_url = data.getStringExtra("apply_url");//data:后一个页面putExtra()中设置的键名
+            webView(apply_url);
+        }
         switch (requestCode) {
             case NOT_NOTICE:
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
@@ -874,6 +982,88 @@ public class MainActivity  extends BaseActivity {
                 }
             }
             break;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
+    protected void onStart() {
+        String apply_url = (String) SPUtils.getInstance().get("apply_url", "");//从其它页面回调，并加载要回调的页面
+        Log.e(TAG, " onStart: "+ apply_url);
+        if (!TextUtils.isEmpty(apply_url)) {
+            webView(apply_url);
+        }
+        //清空跳转地址
+        SPUtils.getInstance().put("apply_url","");
+        super.onStart();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Uri uri = getIntent().getData(); //用户华为通知跳转  浏览器跳转应用  oppo通知跳转
+        if (uri != null) {
+            Log.e(TAG, "open notice list: " + uri);
+
+
+//            String thirdId = uri.getQueryParameter("thirdId");
+//            if (thirdId != null) {
+//                intent = new Intent(this, NewsActivity.class);
+//                intent.putExtra("url", thirdId);
+//                startActivity(intent);
+//            }
+            String open = uri.getQueryParameter("open");
+            if (open.equals("message")) {
+                Log.e(TAG, "huaweiUrl: " + uri);
+                //test://zzy:8080/home?open=message&appid=2&appName=精益生产电子看板  用户华为通知跳转
+//                String huaWei = uri.getQueryParameter("appid");
+//                String appName = uri.getQueryParameter("appName");
+//                JSONObject jsonObject = new JSONObject();
+//                jsonObject.put("appid", huaWei);
+//                jsonObject.put("appName", appName);
+//                String s = jsonObject.toJSONString();
+//                Log.e(TAG, "onNewIntent: " + s);
+//                webView(Constant.APP_NOTICE_LIST);
+//                Handler handler = new Handler();
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        //要执行的操作
+//                        mNewWeb.callHandler("PushMessageIntent", s, new CallBackFunction() {
+//                            @Override
+//                            public void onCallBack(String data) {
+//
+//                            }
+//                        });
+//                    }
+//                }, 1000);//2秒后执行Runnable中的run方法
+//            }
+            }
+
+            String app_notice_list = intent.getStringExtra("APP_NOTICE_LIST");
+//            String xiaomiMessage = intent.getStringExtra("pushContentMessage");
+            if (app_notice_list != null) {
+//            webView(Constant.APP_NOTICE_LIST);
+                if (app_notice_list.equals("咨询")) { //跳转到咨询页面
+                    webView(Constant.MyNews);
+                } else if (app_notice_list.equals(Constant.NOTICE_LIST)) {
+                    webView(Constant.text_url);
+//                    Log.e(TAG, "xiaomiMessage: " + xiaomiMessage);
+//                    Handler handler = new Handler();
+//                    handler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            //要执行的操作
+//                            mNewWeb.callHandler("PushMessageIntent", xiaomiMessage, new CallBackFunction() {
+//                                @Override
+//                                public void onCallBack(String data) {
+//
+//                                }
+//                            });
+//                        }
+//                    }, 1000);//2秒后执行Runnable中的run方法
+                }
+            }
         }
     }
 

@@ -20,7 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RemoteHelper {
 
-    private static final String TAG = "RemoteHelper";
+    private static final String TAG = "RemoteHelper_TAG";
     private static RemoteHelper sInstance;
     private Retrofit mRetrofit;
     private OkHttpClient mOkHttpClient;

@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -16,12 +17,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.honeycom.saas.mobile.base.BaseActivity;
+import com.honeycom.saas.mobile.http.RemoteRepository;
+import com.honeycom.saas.mobile.http.bean.AdMessageBean;
+import com.honeycom.saas.mobile.http.bean.AdMessagePackage;
+import com.honeycom.saas.mobile.push.PushHelper;
 import com.honeycom.saas.mobile.ui.activity.MainActivity;
 import com.honeycom.saas.mobile.ui.activity.ReminderActivity;
 import com.honeycom.saas.mobile.util.NetworkUtils;
 import com.honeycom.saas.mobile.util.SPUtils;
 import com.honeycom.saas.mobile.widget.AgreementDialog;
 import com.honeycom.saas.mobile.widget.QMUITouchableSpan;
+import com.umeng.message.PushAgent;
+import com.umeng.message.api.UPushRegisterCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,7 +37,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import butterknife.BindView;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
 /**
@@ -39,7 +51,7 @@ import okhttp3.ResponseBody;
 * desc : 启动页
 */
 public class StartPageActivity extends BaseActivity {
-    private final String TAG = "StartPageActivity";
+    private final String TAG = "StartPageActivity_TAG";
 
     /*************view*************/
     @BindView(R.id.tv_second)
@@ -83,18 +95,46 @@ public class StartPageActivity extends BaseActivity {
         }
 
         if (NetworkUtils.isConnected()) {
-            loadAdvImg();
+            String advUrl = (String) SPUtils.getInstance().get("oldAdvUrl","1");;
+            loadAdvImg(advUrl);
         }
         initTimeCount = 7;
         isFirstUse = (boolean) SPUtils.getInstance().get("isFirstUse", true);
         if (isFirstUse == true) {
             showAlterpPolicy();
+//            initPush();
         }else {
             layoutSkip.setVisibility(View.INVISIBLE);
             djs = initTimeCount;
             handler.sendMessageDelayed(handler.obtainMessage(-1),100);
         }
 
+        //获取友盟推送deviceToken
+        String deviceToken = PushAgent.getInstance(this).getRegistrationId();
+        Log.e(TAG, "deviceToken: "+deviceToken);
+        if (TextUtils.isEmpty(deviceToken)) {
+            initPush();
+        }else {
+            SPUtils.getInstance().put("deviceToken", deviceToken);
+        }
+    }
+
+    //初始化推送
+    private void initPush() {
+        Log.e(TAG, "init push: ");
+        PushHelper.init(getApplicationContext());
+        PushAgent.getInstance(getApplicationContext()).register(new UPushRegisterCallback() {
+            @Override
+            public void onSuccess(final String deviceToken) {
+                Log.e(TAG, "init deviceToken: "+deviceToken);
+                SPUtils.getInstance().put("deviceToken", deviceToken);
+            }
+
+            @Override
+            public void onFailure(String code, String msg) {
+                Log.e(TAG, "code:" + code + " msg:" + msg);
+            }
+        });
     }
 
     @Override
@@ -114,8 +154,8 @@ public class StartPageActivity extends BaseActivity {
      */
     private void showAlterpPolicy() {
         //默认设置为true
-            new AgreementDialog(this, generateSp("亲爱的用户，欢迎您信任并使用蜂巢制造云！\n" +
-                    "您在使用蜂巢制造云产品或服务前，请认真阅读并充分理解相关用户条款、平台规则及隐私政策。当您点击同意相关条款" +
+            new AgreementDialog(this, generateSp("亲爱的用户，欢迎您信任并使用蜂巢美云！\n" +
+                    "您在使用蜂巢美云产品或服务前，请认真阅读并充分理解相关用户条款、平台规则及隐私政策。当您点击同意相关条款" +
                     "，并开始使用产品或服务，即表示您已经理解并同意该条款，该条款将构成对您具有法律约束力的文件。" +
                     "用户隐私政策主要包含以下内容：个人信息及设备权限（手机号、用户名、邮箱、设备属性信息、设备位置信息、设备连接信息等）" +
                     "的收集、使用与调用等。您可以通过阅读完整版的《用户协议》和《隐私政策》了解详细信息。如您同意，" +
@@ -190,38 +230,49 @@ public class StartPageActivity extends BaseActivity {
 //        startActivity(intent);
     }
 
-    private void loadAdvImg() {
-//        RemoteRepository
-//                .getInstance()
-//                .getAdMessage()
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new SingleObserver<AdMessageBean>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//                        mDisposable.add(d);
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(AdMessageBean adMessageBean){
-//                        SPUtils.getInstance().put("adUrl", adMessageBean.getAdUrl());
-//                        Log.i("get server info", "广告图片地址："+adMessageBean.getAdPictureUrl());
-//                        String url = "";
-//                        if (adMessageBean == null){
-//                            url = "https://hp-dev.obs.cn-east-2.myhuaweicloud.com/screen/file/loading.png?AccessKeyId=W602NAJW6FUOZTMB8K5Y&Expires=1634276792&response-content-disposition=inline&x-obs-security-token=gQpjbi1ub3J0aC00iFsEs2543ts5mAG5NXBW-iJDfns0CSTak0TqnHBjlffUzagNTYfYuCxcc_t7q56WwtqPssJEWQlph_x6j2Yxl-jYLIzgIq4FcrgbVi44ZB0qLklJKebx3oNay1sOZs-bVzzzaM2sJB-9olcpnlEPb-t6ENwD24ntrS1TvS_T_RR6Kpld_sAHSe-k7avY3j86UGfE2CjPljaaEi-geQf0rtBZBFWInB4_4T-UT0v1FKBlmnetzHhBeR3HqVs5-d0H3iyfSRBTBQGGRXPNONbG30p97pOXfABKySgXQNpMnqI3UARje5QOYmM2rpj0JdZGNh2LyTaCBGGEjStFpmDF00--IOkHo2EbKVK2xT2huP8U-K82VPa_iyeu3_T_uorMYabDgrfvUGLOvlfbJYznN8n4aaNb65p-tezYRNB0kHUWW3JyYe9dcGGCsZT6YGh6mpMQ5BlGlk7HryQ1XL44ubWZnYi-RF8TQwB0D9t3e9tbmN3CqJxLlX4j4U1R3BQ-wsa9GHMykmi6m0RwILDyDnX6feYG2BrbDk6b0-x5qHfPw-ao8liRA1jdysRPv9_LJX8OtcqUp_hmYITeopHZC9wEcA8Ik6ZzbkTehPsGkhm10R7aY0EjKkUxrUf9CDu45O4ZpLdjGcUcWn7KLEg3Z63xY4Vz46pKmRNVy0hrk0IHcngQ6qrfqD_O8gVBDaJEwnT6n_k40PTKEO1XSTbe0VLqWT3nmsLkQKv7N5j6JpAsvN9eWipxiUr3RiogFo7pWDYklH0ad5io_A49jKCpxeg%3D&Signature=E7JEcb/TIrg6ms0ok2KREt46wD0%3D";
-//                        }else {
-//                            url = adMessageBean.getAdPictureUrl();
-//                        }
-//                        getAdPicture(url, "adv.jpg");//如果没有下载，直接下载
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-////                        view.showError();
-//                    }
-//                });
+    private void loadAdvImg(String fileName) {
 
-        getAdPicture("https://hp-dev.obs.cn-east-2.myhuaweicloud.com/screen/file/loading.png?AccessKeyId=W602NAJW6FUOZTMB8K5Y&Expires=1634276792&response-content-disposition=inline&x-obs-security-token=gQpjbi1ub3J0aC00iFsEs2543ts5mAG5NXBW-iJDfns0CSTak0TqnHBjlffUzagNTYfYuCxcc_t7q56WwtqPssJEWQlph_x6j2Yxl-jYLIzgIq4FcrgbVi44ZB0qLklJKebx3oNay1sOZs-bVzzzaM2sJB-9olcpnlEPb-t6ENwD24ntrS1TvS_T_RR6Kpld_sAHSe-k7avY3j86UGfE2CjPljaaEi-geQf0rtBZBFWInB4_4T-UT0v1FKBlmnetzHhBeR3HqVs5-d0H3iyfSRBTBQGGRXPNONbG30p97pOXfABKySgXQNpMnqI3UARje5QOYmM2rpj0JdZGNh2LyTaCBGGEjStFpmDF00--IOkHo2EbKVK2xT2huP8U-K82VPa_iyeu3_T_uorMYabDgrfvUGLOvlfbJYznN8n4aaNb65p-tezYRNB0kHUWW3JyYe9dcGGCsZT6YGh6mpMQ5BlGlk7HryQ1XL44ubWZnYi-RF8TQwB0D9t3e9tbmN3CqJxLlX4j4U1R3BQ-wsa9GHMykmi6m0RwILDyDnX6feYG2BrbDk6b0-x5qHfPw-ao8liRA1jdysRPv9_LJX8OtcqUp_hmYITeopHZC9wEcA8Ik6ZzbkTehPsGkhm10R7aY0EjKkUxrUf9CDu45O4ZpLdjGcUcWn7KLEg3Z63xY4Vz46pKmRNVy0hrk0IHcngQ6qrfqD_O8gVBDaJEwnT6n_k40PTKEO1XSTbe0VLqWT3nmsLkQKv7N5j6JpAsvN9eWipxiUr3RiogFo7pWDYklH0ad5io_A49jKCpxeg%3D&Signature=E7JEcb/TIrg6ms0ok2KREt46wD0%3D", "adv.jpg");//如果没有下载，直接下载
+        RemoteRepository
+                .getInstance()
+                .getAdMessage(fileName)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<AdMessagePackage>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        mDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(AdMessagePackage data){
+                        String url = "";
+                        Log.e(TAG, "onSuccess: "+ data);
+                        if (data !=null) {
+                            AdMessageBean adMessageBean = data.getData();
+                            Log.i(TAG, "广告图片地址："+adMessageBean.getAdPictureUrl());
+                            Log.i(TAG, "广告图片是否更新："+adMessageBean.getUpdate());
+                            String localUrl = (String) SPUtils.getInstance().get("adPictureAddress", "");
+                            if (localUrl !=null && !localUrl.equals("") && adMessageBean.getUpdate().equals("false")) {
+                                //本地加载
+                                Log.e(TAG, "load old image ");
+                                getLocalPicture((String) SPUtils.getInstance().get("adPictureAddress",""));
+                            }else {
+
+                                Log.e(TAG, "load new image ");
+                                url = adMessageBean.getAdPictureUrl();
+                                String oldAdvUrl  =  adMessageBean.getAdUrl();
+                                SPUtils.getInstance().put("oldAdvUrl",oldAdvUrl);
+                                getAdPicture(url, "adv.jpg");//如果没有下载，直接下载
+                            }
+                        }else {
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+//                        view.showError();
+                    }
+                });
     }
 
     private SpannableString generateSp(String text) {
@@ -274,50 +325,50 @@ public class StartPageActivity extends BaseActivity {
 
     private void getAdPicture(final String fileUrl, final String fileName) {//获取要展示的广告图片
         if (SPUtils.getInstance().get( "adPictureUrl", "").equals(fileUrl)) {
-            Log.i("server info ", "从本地获取图片");
-            getLocalPicture((String) SPUtils.getInstance().get("adPictureAddress",""));
+            String localUrl = (String) SPUtils.getInstance().get("adPictureAddress","");
+            Log.i(TAG, "从本地获取图片:"+localUrl);
+            getLocalPicture(localUrl);
         } else {
-            Log.i("server info ", "从网络中获取图片");
+            Log.i(TAG, "从网络中获取图片");
+            RemoteRepository
+                    .getInstance()
+                    .downLoadFile(fileUrl)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map(new Function<ResponseBody, Bitmap>() {
+                        @Override
+                        public Bitmap apply(ResponseBody responseBody){
+                            if (responseBody != null) {
+                                Log.i(TAG,"收到的responseBody不为空！");
+                            }
+                            if (writeResponseBodyToDisk(responseBody, fileName, fileUrl)) {
+                                Bitmap bitmap = BitmapFactory.decodeFile(mContext.getExternalFilesDir(null) + File.separator + fileName);
+                                return bitmap;
+                            }
+                            return null;
+                        }
+                    }).subscribe(new SingleObserver<Bitmap>() {
+                @Override
+                public void onSubscribe(Disposable d) {
+                    mDisposable.add(d);
+                }
 
-//            RemoteRepository
-//                    .getInstance()
-//                    .downLoadFile(fileUrl)
-//                    .subscribeOn(Schedulers.newThread())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .map(new Function<ResponseBody, Bitmap>() {
-//                        @Override
-//                        public Bitmap apply(ResponseBody responseBody){
-//                            if (responseBody != null) {
-//                                Log.i(TAG,"收到的responseBody不为空！");
-//                            }
-//                            if (writeResponseBodyToDisk(responseBody, fileName, fileUrl)) {
-//                                Bitmap bitmap = BitmapFactory.decodeFile(mContext.getExternalFilesDir(null) + File.separator + fileName);
-//                                return bitmap;
-//                            }
-//                            return null;
-//                        }
-//                    }).subscribe(new SingleObserver<Bitmap>() {
-//                @Override
-//                public void onSubscribe(Disposable d) {
-//                    mDisposable.add(d);
-//                }
-//
-//                @Override
-//                public void onSuccess(Bitmap bitmap){
-//                    if (bitmap != null) {
-//                        ivAdvertising.setImageBitmap(bitmap);
-//                    } else {//加强用户体验，如果是获取到的bitmap为null，则直接跳过
-//                        continueCount = false;
-//                        startHome();
-//                        finish();
-//                    }
-//                }
-//
-//                @Override
-//                public void onError(Throwable e) {
-////                        view.showError();
-//                }
-//            });
+                @Override
+                public void onSuccess(Bitmap bitmap){
+                    if (bitmap != null) {
+                        ivAdvertising.setImageBitmap(bitmap);
+                    } else {//加强用户体验，如果是获取到的bitmap为null，则直接跳过
+                        continueCount = false;
+                        startHome();
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onError(Throwable e) {
+//                        view.showError();
+                }
+            });
 
         }
 

@@ -25,15 +25,16 @@ android {
         resConfigs 'zh'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86'
+        }
     }
 
     buildTypes {
         release {
             //在这里添加：
-            lintOptions {
-                checkReleaseBuilds false
-                abortOnError false
-            }
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -50,12 +51,21 @@ android {
             outputFileName += '.apk'
         }
     }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
 }
 
 dependencies {
 
     // 友盟封装
     implementation project(':umeng')
+
+    //友盟Push依赖
+//    implementation  'com.umeng.umsdk:common:9.4.4'// 必选
+//    implementation 'com.umeng.umsdk:push:6.4.5'
 
 
     //RxJava

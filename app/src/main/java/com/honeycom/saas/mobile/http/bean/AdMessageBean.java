@@ -7,6 +7,7 @@ public class AdMessageBean {
 
     String adPictureUrl;//广告图片的地址
     String adUrl;//点击广告图片时，展示详情 webview 的地址
+    String update;
 
     public AdMessageBean(String adPictureUrl, String adUrl) {
         this.adPictureUrl = adPictureUrl;
@@ -27,5 +28,22 @@ public class AdMessageBean {
 
     public void setAdUrl(String adUrl) {
         this.adUrl = adUrl;
+    }
+
+    public String getUpdate() {
+        return update;
+    }
+
+    public void setUpdate(String update) {
+        this.update = update;
+    }
+
+    @Override
+    public String toString() {
+        return "AdMessageBean{" +
+                "adPictureUrl='" + adPictureUrl + '\'' +
+                ", adUrl='" + adUrl + '\'' +
+                ", isUpdate=" + update +
+                '}';
     }
 }

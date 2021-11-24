@@ -3,6 +3,7 @@ package com.honeycom.saas.mobile.http.api;
 
 
 import com.honeycom.saas.mobile.http.bean.AdMessageBean;
+import com.honeycom.saas.mobile.http.bean.AdMessagePackage;
 
 import io.reactivex.Single;
 import okhttp3.ResponseBody;
@@ -23,8 +24,8 @@ public interface MesApi {
 
     /************************************系统******************************************************/
 
-    @GET("/api-p/adv/message")
-    Single<AdMessageBean> getAdMessage();
+    @GET("/api-p/tAdvSet/phoneOne")
+    Single<AdMessagePackage> getAdMessage(@Query("compare") String url, @Query("equipmentType") int eqType);
 
     @GET
     Single<ResponseBody> downLoadFile(@Url String fileUrl);

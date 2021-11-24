@@ -7,6 +7,7 @@ import androidx.annotation.RequiresApi;
 
 import com.honeycom.saas.mobile.http.api.MesApi;
 import com.honeycom.saas.mobile.http.bean.AdMessageBean;
+import com.honeycom.saas.mobile.http.bean.AdMessagePackage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +52,8 @@ public class RemoteRepository {
 
 
     /**************************启动**********************************/
-    public Single<AdMessageBean> getAdMessage() {
-        return mesApi.getAdMessage();
+    public Single<AdMessagePackage> getAdMessage(String url) {
+        return mesApi.getAdMessage(url, 1);
     }
 
     public Single<ResponseBody> downLoadFile(String fileUrl) {

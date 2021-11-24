@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.commonsdk.UMConfigure;
+import com.umeng.commonsdk.utils.UMUtils;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.ShareAction;
 import com.umeng.socialize.UMShareAPI;
@@ -51,10 +52,36 @@ public final class UmengClient {
             //PlatformConfig.setDing("dingoalmlnohc0wggfedpk");
             //PlatformConfig.setVKontakte("5764965","5My6SNliAaLxEm3Lyd9J");
             //PlatformConfig.setDropbox("oz8v5apet3arcdy","h7p2pjbzkkxt02a");
-            Log.e("UM-init", "init: ok");
+
+//            initUmengSDK(application);
+            Log.e("UM-init_TAG", "init: ok");
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
-            Log.e("UM-init", "init: fail");
+            Log.e("UM-init_TAG", "init: fail");
+        }
+    }
+
+    public static void initUmengSDK(Application application) {
+
+        //日志开关
+        UMConfigure.setLogEnabled(true);
+        //预初始化
+        PushHelper.preInit(application);
+
+        boolean isMainProcess = UMUtils.isMainProgress(application);
+
+        Log.e("_TAG", "------initUmengSDK: ------"+isMainProcess );
+        if (isMainProcess) {
+            //启动优化：建议在子线程中执行初始化
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    PushHelper.init(application);
+                }
+            }).start();
+        } else {
+            //若不是主进程（":channel"结尾的进程），直接初始化sdk，不可在子线程中执行
+            PushHelper.init(application);
         }
     }
 

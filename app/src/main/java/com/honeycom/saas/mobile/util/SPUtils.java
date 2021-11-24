@@ -83,7 +83,7 @@ public class SPUtils {
     /**
      * 删除指定数据
      */
-    public void remove(Context context, String key) {
+    public void remove(String key) {
         sharedWritable.remove(key);
         sharedWritable.commit();
     }

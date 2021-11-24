@@ -41,6 +41,17 @@
             android:name="WX_APPKEY"
             android:value="${WX_APPKEY}" />
 
+        <!-- 友盟推送 -->
+        <meta-data
+            android:name="Appkey"
+            android:value="${Appkey}" />
+        <meta-data
+            android:name="MessageSecret"
+            android:value="${MessageSecret}" />
+        <meta-data
+            android:name="UMENG_MESSAGE_SECRET"
+            android:value="${UMENG_MESSAGE_SECRET}" />
+
         <!-- 友盟社会化 -->
 
         <!-- QQ 回调 -->
@@ -74,6 +85,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             tools:node="replace"
             tools:ignore="MissingClass" />
+
 
     </application>
 

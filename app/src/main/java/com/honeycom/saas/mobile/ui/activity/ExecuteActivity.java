@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,9 +63,11 @@ import com.honeycom.saas.mobile.BuildConfig;
 import com.honeycom.saas.mobile.R;
 import com.honeycom.saas.mobile.base.BaseActivity;
 import com.honeycom.saas.mobile.http.bean.BrowserBean;
+import com.honeycom.saas.mobile.http.bean.UserInfoBean;
 import com.honeycom.saas.mobile.util.BaseUtils;
 import com.honeycom.saas.mobile.util.Constant;
 import com.honeycom.saas.mobile.util.SPUtils;
+import com.honeycom.saas.mobile.util.StatusBarCompat;
 import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
@@ -123,7 +126,9 @@ public class ExecuteActivity extends BaseActivity {
     private static final String[] APPLY_PERMISSIONS_APPLICATION = { //第三方应用授权
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.ACCESS_FINE_LOCATION};
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int ADDRESS_PERMISSIONS_CODE = 1;
     //如果权限勾选了不再询问
     private static final int NOT_NOTICE = 2;
@@ -206,9 +211,10 @@ public class ExecuteActivity extends BaseActivity {
     protected void initData(Bundle savedInstanceState) {
         super.initData(savedInstanceState);
         mContext = this;
-        Log.i(TAG, "initData: execute");
+
         Intent intent = getIntent();
         url = intent.getStringExtra("url");
+        Log.i(TAG, "initData: execute:"+url);
         token = intent.getStringExtra("token");
         userid = intent.getStringExtra("userid");
         appId = intent.getStringExtra("appId");
@@ -218,6 +224,13 @@ public class ExecuteActivity extends BaseActivity {
     @Override
     protected void initWidget() {
         super.initWidget();
+
+        //更改状态栏颜色
+        StatusBarCompat.compat(this, ContextCompat.getColor(this, R.color.status_text));
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            //修改为深色，因为我们把状态栏的背景色修改为主题色白色，默认的文字及图标颜色为白色，导致看不到了。
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 
         try {
             if (!url.isEmpty()) {
@@ -249,6 +262,8 @@ public class ExecuteActivity extends BaseActivity {
                 finish();
             }
         });
+
+
     }
 
     /**
@@ -287,6 +302,28 @@ public class ExecuteActivity extends BaseActivity {
         //js交互接口定义
 //        mNewWeb.addJavascriptInterface(new ApplyFirstActivity.MJavaScriptInterface(getApplicationContext()), "ApplyFunc");
         wvClientSetting(mNewWeb);
+
+        //回退监听
+        mNewWeb.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    Log.e(TAG, "onKey: web back  1");
+                    if (mNewWeb != null && mNewWeb.canGoBack()) {
+                        Log.e(TAG, "onKey: web back  2"+goBackUrl);
+                        if (goBackUrl.contains("/p/home")) { //首页拦截物理返回键  直接关闭应用
+                            finish();
+                        } else if (goBackUrl.contains("/information")) { //确保从该页面返回的是首页
+                            webView(Constant.text_url);
+                        } else {
+                            mNewWeb.goBack();
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
 
         /**
          * 获取版本号
@@ -342,8 +379,7 @@ public class ExecuteActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 try {
-                    SharedPreferences sb = getSharedPreferences("userInfoSafe", MODE_PRIVATE);
-                    String userInfo = sb.getString("userInfo", "");
+                    String userInfo = (String) SPUtils.getInstance().get("userInfo", "");
                     if (!userInfo.isEmpty()) {
                         function.onCallBack(userInfo);
                     } else {
@@ -438,6 +474,23 @@ public class ExecuteActivity extends BaseActivity {
 
             }
         });
+
+        //存储用户登录页面传递的信息
+        mNewWeb.registerHandler("setUserInfo", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                try {
+                    Log.e(TAG, "获取用户登录信息: " + data);
+                    if (!data.isEmpty()) {
+                        SPUtils.getInstance().put("userInfo", data);
+                        function.onCallBack("success");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         /**
          * 下载文件
          */
@@ -795,6 +848,7 @@ public class ExecuteActivity extends BaseActivity {
                         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
                                 != PackageManager.PERMISSION_GRANTED) {
                             //申请READ_EXTERNAL_STORAGE权限
+                            Log.e(TAG, "onCityClick: no permission" );
                             ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
                                     ADDRESS_PERMISSIONS_CODE);
                         }
@@ -853,6 +907,17 @@ public class ExecuteActivity extends BaseActivity {
             // For Android >= 5.0 打开系统文件管理系统
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+
+                if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请READ_EXTERNAL_STORAGE权限
+                    Log.e(TAG, "onCityClick: no permission" );
+                    ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                            ADDRESS_PERMISSIONS_CODE);
+                }else {
+                    Log.e(TAG, "onCityClick: have permission" );
+                }
+
                 String[] acceptTypes = fileChooserParams.getAcceptTypes();
                 boolean isphoto = fileChooserParams.isCaptureEnabled();
                 int i = fileChooserParams.getMode();
@@ -866,6 +931,7 @@ public class ExecuteActivity extends BaseActivity {
                 }else if (acceptTypes[0].equals("*/*")) {
                     openFileChooserActivity(); //文件系统管理
                 } else if (acceptTypes[0].equals("image/*")) {
+                    Log.e(TAG, "onShowFileChooser: 1");
                     openImageChooserActivity();//打开系统拍照及相册选取
                 } else if (acceptTypes[0].equals("video/*")) {
                     openVideoChooserActivity();//打开系统拍摄/选取视频
@@ -1158,7 +1224,7 @@ public class ExecuteActivity extends BaseActivity {
 //        Intent chooserIntent = Intent.createChooser(Photo, "Image Chooser");
 //        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
 //        startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
-
+        Log.e(TAG, "openImageCaptureActivity: ");
         startActivityForResult(captureIntent, FILE_CHOOSER_RESULT_CODE);
     }
 
@@ -1166,19 +1232,54 @@ public class ExecuteActivity extends BaseActivity {
      * 跳转到用户拍照/选取相册
      */
     public void openImageChooserActivity() {
-        String filePath = Environment.getExternalStorageDirectory() + File.separator
-                + Environment.DIRECTORY_PICTURES + File.separator;
-        String fileName = "IMG_" + DateFormat.format("yyyyMMdd_hhmmss", Calendar.getInstance(Locale.CHINA)) + ".jpg";
-        String _file = filePath + fileName;
-        imageUriThreeApply = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", new File( _file));//Uri.fromFile(new File(filePath + fileName));
-        //相册相机选择窗
+//        String filePath = Environment.getExternalStorageDirectory() + File.separator
+//                + Environment.DIRECTORY_PICTURES + File.separator;
+//        String fileName = "IMG_" + DateFormat.format("yyyyMMdd_hhmmss", Calendar.getInstance(Locale.CHINA)) + ".jpg";
+//        String _file = filePath + fileName;
+//        Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//            //设置7.0中共享文件，分享路径定义在xml/file_paths.xml
+//            captureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//            imageUriThreeApply = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", new File( _file));
+//            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
+//            Log.e(TAG, "openImageChooserActivity: fileprovider");
+//        } else {
+//            imageUriThreeApply =  Uri.fromFile(new File( _file));
+//            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
+//            Log.e(TAG, "openImageChooserActivity: urI");
+//        }
+
+        //	获取图片沙盒文件夹
+        File dPictures = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        //图片名称
+        String mFileName = "IMG_" + System.currentTimeMillis() + ".jpg";
+        //图片路径
+        String mFilePath = dPictures.getAbsolutePath() + "/" + mFileName;
+        //创建拍照存储的图片文件
+        tempFile = new File(mFilePath);
+        //跳转到调用系统相机
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //设置7.0中共享文件，分享路径定义在xml/file_paths.xml
+            captureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            imageUriThreeApply = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", tempFile);
+            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
+        } else {
+            imageUriThreeApply =  Uri.fromFile(tempFile);
+            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
+        }
+        Log.i(TAG, "start gotoCamera: ");
+
+//        imageUriThreeApply = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", new File( _file));//Uri.fromFile(new File(filePath + fileName));
+        //相册相机选择窗
+
+//        captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
 
         Intent Photo = new Intent(Intent.ACTION_PICK,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         Intent chooserIntent = Intent.createChooser(Photo, "Image Chooser");
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
+        Log.e(TAG, "openImageChooserActivity: ");
         startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
 
     }
@@ -1333,21 +1434,23 @@ public class ExecuteActivity extends BaseActivity {
         startActivity(intent);
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        //回退操作
-        if (mNewWeb != null && mNewWeb.canGoBack()) {
-            Log.e(TAG, "onClick: 可以返回");
-            if (mWebError.getVisibility() == View.VISIBLE) {
-                finish();
-            } else {
-                mNewWeb.goBack();
-            }
-        } else {
-            finish();
-        }
-    }
+//    @Override
+//    public void onBackPressed() {
+//        super.onBackPressed();
+//        //回退操作
+//        Log.e(TAG, "onClick: 可以返回"+mNewWeb.canGoBack());
+//        if (mNewWeb != null && mNewWeb.canGoBack()) {
+//            if (mWebError.getVisibility() == View.VISIBLE) {
+//                Log.e(TAG, "back: finish");
+//                finish();
+//            } else {
+//                Log.e(TAG, "back: last page");
+//                mNewWeb.goBack();
+//            }
+//        } else {
+//            finish();
+//        }
+//    }
 
     /**
      * 系统回调
@@ -1360,6 +1463,7 @@ public class ExecuteActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_CHOOSER_RESULT_CODE) {
+            Log.e(TAG, "onActivityResult: choose image back"+data);
             if (data != null) {
                 if (null == uploadMessage && null == uploadMessageAboveL) return;
                 Uri result = data == null || resultCode != RESULT_OK ? null : data.getData();
@@ -1380,6 +1484,7 @@ public class ExecuteActivity extends BaseActivity {
                     uploadMessage = null;
                 }
             } else if (imageUriThreeApply != null) {
+                Log.e(TAG, "onActivityResult: choose image 3 "+imageUriThreeApply);
                 uploadMessageAboveL.onReceiveValue(new Uri[]{imageUriThreeApply});
             } else {
                 //这里uploadMessage跟uploadMessageAboveL在不同系统版本下分别持有了
@@ -1425,13 +1530,13 @@ public class ExecuteActivity extends BaseActivity {
                     if (data != null) {
                         String stringExtra = data.getStringExtra(Constant.CODED_CONTENT);
                         Log.e(TAG, "stringExtra length: "+ stringExtra.length());
-                        Log.e(TAG, "onActivityResult: "+ stringExtra);
-                        mNewWeb.evaluateJavascript("window.sdk.getCodeUrl(\"" + stringExtra + "\")", new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String value) {
-
-                            }
-                        });
+                        Log.e(TAG, "getCodeUrl: "+ stringExtra);
+//                        mNewWeb.evaluateJavascript("window.sdk.getCodeUrl(\"" + stringExtra + "\")", new ValueCallback<String>() {
+//                            @Override
+//                            public void onReceiveValue(String value) {
+//
+//                            }
+//                        });
                         /**
                          * 一下注释掉的功能延期开放
                          */
@@ -1553,6 +1658,7 @@ public class ExecuteActivity extends BaseActivity {
     // 选择内容回调到Html页面
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void onActivityResultAboveL(int requestCode, int resultCode, Intent intent, Uri uri) {
+        Log.e(TAG, "onActivityResultAboveL: requestCode:"+requestCode);
         if (requestCode != FILE_CHOOSER_RESULT_CODE || uploadMessageAboveL == null)
             return;
         if ("file".equalsIgnoreCase(intent.getScheme())) {//使用第三方应用打开
@@ -1580,7 +1686,9 @@ public class ExecuteActivity extends BaseActivity {
                 if (dataString != null) {
                     results = new Uri[]{Uri.parse(dataString)};
                     if (path == null) {
+
                         String nameFromUrl = BaseUtils.getNameFromUrl(uri.toString());
+                        Log.e(TAG, "onActivityResultAboveL: getFileInfo:"+nameFromUrl);
                         mNewWeb.evaluateJavascript("window.sdk.getFileInfo(\"" + nameFromUrl + "\")", new ValueCallback<String>() {
                             @Override
                             public void onReceiveValue(String value) {
@@ -1598,6 +1706,7 @@ public class ExecuteActivity extends BaseActivity {
                         });
                     } else {
                         String nameFromUrl = BaseUtils.getNameFromUrl(path);
+                        Log.e(TAG, "onActivityResultAboveL: getFileInfo2:"+nameFromUrl);
                         mNewWeb.evaluateJavascript("window.sdk.getFileInfo(\"" + nameFromUrl + "\")", new ValueCallback<String>() {
                             @Override
                             public void onReceiveValue(String value) {
