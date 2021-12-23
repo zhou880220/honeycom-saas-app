@@ -203,8 +203,8 @@ public class StartPageActivity extends BaseActivity {
         layoutSkip.setOnClickListener(v -> {
             Log.i(TAG,"skip :");
             continueCount = false;
-            startHome();
-            finish();
+            checkH5Version();
+//            finish();
         });
 
     }
@@ -256,16 +256,20 @@ public class StartPageActivity extends BaseActivity {
         if (timeCount == 3) {//数秒，超过3秒后如果没有网络，则进入下一个页面
             if (!NetworkUtils.isConnected()) {
                 continueCount = false;
-                startHome();
-                finish();
+                checkH5Version();
+//                finish();
             }
-            ivAdvertising.setVisibility(View.VISIBLE);
-            layoutSkip.setVisibility(View.VISIBLE);
+            if (ivAdvertising !=null) {
+                ivAdvertising.setVisibility(View.VISIBLE);
+            }
+            if (layoutSkip !=null) {
+                layoutSkip.setVisibility(View.VISIBLE);
+            }
         }
         if (timeCount == initTimeCount) {
             continueCount = false;
-            startHome();
-            finish();
+            checkH5Version();
+//            finish();
             Log.e(TAG, "countNum: b " );
         }
         return timeCount;
@@ -281,12 +285,7 @@ public class StartPageActivity extends BaseActivity {
             ActivityCompat.requestPermissions(StartPageActivity.this, APPLY_PERMISSIONS_APPLICATION,
                     ADDRESS_PERMISSIONS_CODE);
         }else {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkH5Version();
-                }
-            });
+            checkH5Version();
         }
 
 //        Intent intent= new Intent(StartPageActivity.this, ExecuteActivity.class);
@@ -513,8 +512,8 @@ public class StartPageActivity extends BaseActivity {
                         ivAdvertising.setImageBitmap(bitmap);
                     } else {//加强用户体验，如果是获取到的bitmap为null，则直接跳过
                         continueCount = false;
-                        startHome();
-                        finish();
+                        checkH5Version();
+//                        finish();
                     }
                 }
 
@@ -534,8 +533,8 @@ public class StartPageActivity extends BaseActivity {
             ivAdvertising.setImageBitmap(bitmap);
         } else {//加强用户体验，如果是获取到的bitmap为null，则直接跳过
             continueCount = false;
-            startHome();
-            finish();
+            checkH5Version();
+//            finish();
         }
     }
 
