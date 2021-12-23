@@ -1,6 +1,9 @@
 package com.honeycom.saas.mobile.web;
 
+import android.content.Context;
 import android.webkit.WebSettings;
+
+import com.honeycom.saas.mobile.App;
 
 /**
 * author : zhoujr
@@ -37,5 +40,14 @@ public class WebViewSetting {
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
+
+//        String path = App.getContext().getDir("cache", Context.MODE_PRIVATE).getPath();
+//        //设置缓存路径
+//        webSettings.setAppCachePath(path);
+//        //设置缓存大小
+//        webSettings.setAppCacheMaxSize(10*1024*1024);
+//        //开启缓存
+//        webSettings.setAppCacheEnabled(true);
+
     }
 }

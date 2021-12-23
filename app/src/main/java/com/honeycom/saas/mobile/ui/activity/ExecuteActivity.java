@@ -125,8 +125,6 @@ public class ExecuteActivity extends BaseActivity {
     private static final int REQUEST_PICK = 101;
     private static final String[] APPLY_PERMISSIONS_APPLICATION = { //第三方应用授权
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int ADDRESS_PERMISSIONS_CODE = 1;
@@ -766,6 +764,7 @@ public class ExecuteActivity extends BaseActivity {
         mNewWeb.registerHandler("startIntentZing", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "startIntentZing: ");
                 try {
                     ZxingConfig config = new ZxingConfig();
                     config.setShowAlbum(false);
@@ -838,8 +837,8 @@ public class ExecuteActivity extends BaseActivity {
             public void onCityClick(String name) {
                 goBackUrl = name;
                 Log.e(TAG, "onCityClick: " + name);
-                WebBackForwardList webBackForwardList = mNewWeb.copyBackForwardList();
-                boolean b = webBackForwardList.getCurrentIndex() != webBackForwardList.getSize() - 1;
+//                WebBackForwardList webBackForwardList = mNewWeb.copyBackForwardList();
+//                boolean b = webBackForwardList.getCurrentIndex() != webBackForwardList.getSize() - 1;
                 try {
                     if (name.contains("/api-o/oauth")) {  //偶然几率报错  用try
 //                        mApplyBackImage1.setVisibility(View.GONE);
@@ -908,33 +907,44 @@ public class ExecuteActivity extends BaseActivity {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
 
-                if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE)
+                if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) {
                     //申请READ_EXTERNAL_STORAGE权限
-                    Log.e(TAG, "onCityClick: no permission" );
-                    ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                    Log.e(TAG, "onCityClick: no permission camera" );
+                    ActivityCompat.requestPermissions(ExecuteActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            ADDRESS_PERMISSIONS_CODE);
+                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请READ_EXTERNAL_STORAGE权限
+                    Log.e(TAG, "onCityClick: no permission record" );
+                    ActivityCompat.requestPermissions(ExecuteActivity.this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            ADDRESS_PERMISSIONS_CODE);
+                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请READ_EXTERNAL_STORAGE权限
+                    Log.e(TAG, "onCityClick: no permission storage" );
+                    ActivityCompat.requestPermissions(ExecuteActivity.this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE},
                             ADDRESS_PERMISSIONS_CODE);
                 }else {
                     Log.e(TAG, "onCityClick: have permission" );
-                }
+                    String[] acceptTypes = fileChooserParams.getAcceptTypes();
+                    boolean isphoto = fileChooserParams.isCaptureEnabled();
+                    int i = fileChooserParams.getMode();
+                    Log.i(TAG, "onShowFileChooser: "+isphoto + "  i="+i);
+                    uploadMessageAboveL = filePathCallback;
+                    Log.e(TAG, "onShowFileChooser:这个是什么鬼 " + acceptTypes[0]);
 
-                String[] acceptTypes = fileChooserParams.getAcceptTypes();
-                boolean isphoto = fileChooserParams.isCaptureEnabled();
-                int i = fileChooserParams.getMode();
-                Log.i(TAG, "onShowFileChooser: "+isphoto + "  i="+i);
-                uploadMessageAboveL = filePathCallback;
-                Log.e(TAG, "onShowFileChooser:这个是什么鬼 " + acceptTypes[0]);
-
-                if (acceptTypes[0].equals("image/*") && isphoto && i  == FileChooserParams.MODE_OPEN) {
-                    Log.e(TAG, "start capture");
-                    openImageCaptureActivity();//打开系统拍照及相册选取
-                }else if (acceptTypes[0].equals("*/*")) {
-                    openFileChooserActivity(); //文件系统管理
-                } else if (acceptTypes[0].equals("image/*")) {
-                    Log.e(TAG, "onShowFileChooser: 1");
-                    openImageChooserActivity();//打开系统拍照及相册选取
-                } else if (acceptTypes[0].equals("video/*")) {
-                    openVideoChooserActivity();//打开系统拍摄/选取视频
+                    if (acceptTypes[0].equals("image/*") && isphoto && i  == FileChooserParams.MODE_OPEN) {
+                        Log.e(TAG, "start capture");
+                        openImageCaptureActivity();//打开系统拍照及相册选取
+                    }else if (acceptTypes[0].equals("*/*")) {
+                        openFileChooserActivity(); //文件系统管理
+                    } else if (acceptTypes[0].equals("image/*")) {
+                        Log.e(TAG, "onShowFileChooser: 1");
+                        openImageChooserActivity();//打开系统拍照及相册选取
+                    } else if (acceptTypes[0].equals("video/*")) {
+                        openVideoChooserActivity();//打开系统拍摄/选取视频
+                    }
                 }
                 return true;
             }
@@ -1201,20 +1211,23 @@ public class ExecuteActivity extends BaseActivity {
      * 跳转到用户拍照/选取相册
      */
     public void openImageCaptureActivity() {
-        String filePath = Environment.getExternalStorageDirectory() + File.separator
-                + Environment.DIRECTORY_PICTURES + File.separator;
-        String fileName = "IMG_" + DateFormat.format("yyyyMMdd_hhmmss", Calendar.getInstance(Locale.CHINA)) + ".jpg";
-        String _file = filePath + fileName;
-//        imageUriThreeApply = FileProvider.getUriForFile(MyApplication.getContext(), MyApplication.getContext().getApplicationContext().getPackageName() + ".fileprovider", new File( _file));//Uri.fromFile(new File(filePath + fileName));
+        //	获取图片沙盒文件夹
+        File dPictures = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        //图片名称
+        String mFileName = "IMG_" + System.currentTimeMillis() + ".jpg";
+        //图片路径
+        String mFilePath = dPictures.getAbsolutePath() + "/" + mFileName;
+        //创建拍照存储的图片文件
+        tempFile = new File(mFilePath);
         //相册相机选择窗
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             //设置7.0中共享文件，分享路径定义在xml/file_paths.xml
             captureIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            imageUriThreeApply = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", new File( _file));
+            imageUriThreeApply = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", tempFile);
             captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
         } else {
-            imageUriThreeApply =  Uri.fromFile(new File( _file));
+            imageUriThreeApply =  Uri.fromFile(tempFile);
             captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);
         }
         captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUriThreeApply);

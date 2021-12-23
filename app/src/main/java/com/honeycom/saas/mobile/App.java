@@ -6,8 +6,12 @@ import android.util.Log;
 
 import com.honeycom.saas.mobile.push.PushHelper;
 import com.honeycom.umeng.UmengClient;
+import com.liulishuo.filedownloader.FileDownloader;
 import com.umeng.commonsdk.UMConfigure;
 import com.umeng.commonsdk.utils.UMUtils;
+
+import ren.yale.android.cachewebviewlib.WebViewCacheInterceptor;
+import ren.yale.android.cachewebviewlib.WebViewCacheInterceptorInst;
 
 
 //import com.alibaba.android.arouter.launcher.ARouter;
@@ -42,6 +46,8 @@ public class App extends Application {
         UmengClient.init(this);
         //友盟 推送
         initUmengSDK(this);
+        //下载器
+        WebViewCacheInterceptorInst.getInstance().init(new WebViewCacheInterceptor.Builder(this));
     }
 
     public static String getToken() {

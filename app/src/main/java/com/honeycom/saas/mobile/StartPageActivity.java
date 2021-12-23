@@ -1,10 +1,16 @@
 package com.honeycom.saas.mobile;
 
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.SpannableString;
@@ -15,18 +21,36 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.gson.Gson;
 import com.honeycom.saas.mobile.base.BaseActivity;
+import com.honeycom.saas.mobile.http.CallBackUtil;
+import com.honeycom.saas.mobile.http.OkhttpUtil;
 import com.honeycom.saas.mobile.http.RemoteRepository;
 import com.honeycom.saas.mobile.http.bean.AdMessageBean;
 import com.honeycom.saas.mobile.http.bean.AdMessagePackage;
+import com.honeycom.saas.mobile.http.bean.H5VersionInfo;
+import com.honeycom.saas.mobile.http.bean.H5VersionInfoPackage;
 import com.honeycom.saas.mobile.push.PushHelper;
+import com.honeycom.saas.mobile.ui.activity.HomeActivity;
 import com.honeycom.saas.mobile.ui.activity.MainActivity;
 import com.honeycom.saas.mobile.ui.activity.ReminderActivity;
+import com.honeycom.saas.mobile.util.BaseUtils;
+import com.honeycom.saas.mobile.util.Constant;
+import com.honeycom.saas.mobile.util.FileDownloadUtils;
 import com.honeycom.saas.mobile.util.NetworkUtils;
 import com.honeycom.saas.mobile.util.SPUtils;
+import com.honeycom.saas.mobile.util.VersionUtils;
+import com.honeycom.saas.mobile.util.ZipUtils;
 import com.honeycom.saas.mobile.widget.AgreementDialog;
 import com.honeycom.saas.mobile.widget.QMUITouchableSpan;
+import com.liulishuo.filedownloader.BaseDownloadTask;
+import com.liulishuo.filedownloader.FileDownloadListener;
+import com.liulishuo.filedownloader.FileDownloader;
 import com.umeng.message.PushAgent;
 import com.umeng.message.api.UPushRegisterCallback;
 
@@ -35,6 +59,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.SingleObserver;
@@ -43,6 +72,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Call;
 import okhttp3.ResponseBody;
 
 /**
@@ -70,16 +100,30 @@ public class StartPageActivity extends BaseActivity {
     boolean continueCount = true;
     int timeCount = 0;
 
-    Handler handler = new Handler() {
+//    private String h5_url = "https://hp-prod.obs.cn-east-2.myhuaweicloud.com:443/h5/saas-app.zip?AccessKeyId=F564FOJG9OAAE92CP5NU&Expires=1640203102&response-content-disposition=inline&x-obs-security-token=gQpjbi1ub3J0aC00hkQ1IAOeIE6cCYvzMmfEZio74Gg8wiLJKt1CTFWUhs-3ljQ3UPlPpYOqfDQi4ZvoYuObU9QAFqA2NNwQ4z8RcvX_z_MmRlgRDZ6536W5Ap7FFB1V2S_s6JLwjpXx0EVoxDPyXYWGa-Maiu7KLt3LwS6Vt4u3Xj3oXyeMacK7y0bn6lG2GaWhRF-KVejgp-CvNDWv3jZJkyURInMCOpAOh3ysZfc5an46HMC2Gbzipx16hviSaMdJCmCKum1h1C2qehAqy5pNRp3rq0D0JxwfT4AsR3b6N9fDWV7M9UUca3K51JpTfU4iK1dQ44ccLz5GWZ1NIcMYfp92MLtNpfoZnVnF34Y0vSHZ3M8j015Oui1ccYZQW_SPu18mhVMAV_NgvDtafY-R5M6pKeh9RHxpEJGm15bwDEde5VlD0YTSiSuuRVLY8GfXKYowi9n9as3OhL7GWPBch_vlxHCXcEyr4D216GBsrICetsDiAcSU9LdT1ycvhU1N6COeAZWRYhKs_x7UN5ee_y5Dvk59oDyK1I3jJpjJ4QiR5Imm80IbcqBnrbEuFoVwp-c-rLHcGpFuba0-svn3Sja2tQgSHVlJznUQlyE0vFV21uVNKpNAKOclXOVGsc37gzOBVutUn06zsSeUHpp2d1vJTDSLw5mpwJzNEsnjh1KR7Gom2tUWB2_8C9PITD18voihBYVjT7wH76YBEPqShfrfJPF5f_f4BfZEV2jzrTR-9i4w0z9fzqgyornj9d2n9arkzlP-07wbQEFYhl4HDRpJ9p5c8TonuFE%3D&Signature=yc8TOmex0mDxGokXt2aHN%2BX%2B19M%3D";
+
+    long time = new Date().getTime();
+
+    private static final int ADDRESS_PERMISSIONS_CODE = 200;
+    private static final String[] APPLY_PERMISSIONS_APPLICATION = { //相机扫码授权
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+    Handler handler2 = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             countNum();
             if (continueCount) {
-                handler.sendMessageDelayed(handler.obtainMessage(-1),1000);
+                handler2.sendMessageDelayed(handler.obtainMessage(-1),1000);
             }
         }
     };
+
+    //其他句柄
+    private  Handler handler = new Handler();
 
     @Override
     protected int getLayoutId() {
@@ -94,19 +138,34 @@ public class StartPageActivity extends BaseActivity {
             mDisposable = new CompositeDisposable();
         }
 
+        Log.e(TAG, "initWidget: start " + time);
         if (NetworkUtils.isConnected()) {
             String advUrl = (String) SPUtils.getInstance().get("oldAdvUrl","1");;
-            loadAdvImg(advUrl);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    loadAdvImg(advUrl);
+                }
+            });
         }
-        initTimeCount = 7;
+
+        initTimeCount = 3;
         isFirstUse = (boolean) SPUtils.getInstance().get("isFirstUse", true);
         if (isFirstUse == true) {
-            showAlterpPolicy();
-//            initPush();
-        }else {
             layoutSkip.setVisibility(View.INVISIBLE);
+            showAlterpPolicy();
+        }else {
+//            layoutSkip.setVisibility(View.INVISIBLE);
             djs = initTimeCount;
-            handler.sendMessageDelayed(handler.obtainMessage(-1),100);
+            handler2.sendMessage(handler2.obtainMessage(-1));
+
+            //h5 检测h5版本，有新版则下载
+//            handler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    checkH5Version();
+//                }
+//            });
         }
 
         //获取友盟推送deviceToken
@@ -117,6 +176,7 @@ public class StartPageActivity extends BaseActivity {
         }else {
             SPUtils.getInstance().put("deviceToken", deviceToken);
         }
+
     }
 
     //初始化推送
@@ -184,12 +244,14 @@ public class StartPageActivity extends BaseActivity {
      * @return
      */
     private int countNum() {//数秒
+        Log.e(TAG, "countNum: "+timeCount );
         timeCount++;
         if (djs >= 0) {
-            if (tvSecond!=null) {
+            if (tvSecond!= null) {
                 tvSecond.setText(""+ djs);
             }
             djs --;
+            Log.e(TAG, "countNum: a " );
         }
         if (timeCount == 3) {//数秒，超过3秒后如果没有网络，则进入下一个页面
             if (!NetworkUtils.isConnected()) {
@@ -204,6 +266,7 @@ public class StartPageActivity extends BaseActivity {
             continueCount = false;
             startHome();
             finish();
+            Log.e(TAG, "countNum: b " );
         }
         return timeCount;
     }
@@ -212,26 +275,117 @@ public class StartPageActivity extends BaseActivity {
      * 跳转首页
      */
     private void startHome() {
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                Intent intent = new Intent(StartPageActivity.this, MainActivity.class);
-//                startActivity(intent);
-//                finish();
-//            }
-//        }, 500);
-
-        Intent intent = new Intent(StartPageActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            //申请READ_EXTERNAL_STORAGE权限
+            ActivityCompat.requestPermissions(StartPageActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                    ADDRESS_PERMISSIONS_CODE);
+        }else {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkH5Version();
+                }
+            });
+        }
 
 //        Intent intent= new Intent(StartPageActivity.this, ExecuteActivity.class);
 //        intent.putExtra("url", Constant.text_url);
 //        startActivity(intent);
     }
 
-    private void loadAdvImg(String fileName) {
+    /**
+     * 检测h5版本，有新版则下载
+     */
+    private void checkH5Version() {
+        int sysVersion = VersionUtils.getVersion(this);
+        Map<String, String> paramsMap =  new HashMap<>();
+        paramsMap.put("updateVersion", sysVersion+"");
+        paramsMap.put("equipmentType", "1");
+        paramsMap.put("platformType", Constant.platform_type);
+        String jsonStr = new Gson().toJson(paramsMap);
+        Log.e(TAG, "request api: "+Constant.webVersionCheck);
+        Log.e(TAG, "request params: "+jsonStr);
+        OkhttpUtil.okHttpPostJson(Constant.webVersionCheck, jsonStr, new CallBackUtil.CallBackString() {
+            @Override
+            public void onFailure(Call call, Exception e) { }
 
+            @Override
+            public void onResponse(String response) {
+                Log.e(TAG, "onResponse2: " + response);
+                try{
+                    if(!TextUtils.isEmpty(response)) {
+                        H5VersionInfoPackage h5VersionInfoPackage = new Gson().fromJson(response, H5VersionInfoPackage.class);
+                        String oldVersion = (String) SPUtils.getInstance().get(Constant.H5_VERSION, "");
+                        if (h5VersionInfoPackage !=null) {
+                            H5VersionInfo h5VersionInfo = h5VersionInfoPackage.getData().get(0);
+                            String h5Version = h5VersionInfo.getH5Version();
+                            Log.e(TAG, "H5_VERSION: " + h5Version);
+                            if (h5Version!=null && !h5Version.equals(oldVersion)) {
+                                downH5(h5VersionInfo.getH5UrlAll(), h5Version);
+                            }else {
+                                toHome();
+                            }
+                        }else {
+                            toHome();
+                        }
+                    }
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    toHome();
+                    Log.e(TAG, "H5_VERSION check fail !! ");
+                }
+            }
+        });
+    }
+
+
+    /**
+     * 获取用户权限
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case ADDRESS_PERMISSIONS_CODE:
+                //权限请求失败
+                if (grantResults.length == APPLY_PERMISSIONS_APPLICATION.length) {
+                    for (int result : grantResults) {
+                        if (result != PackageManager.PERMISSION_GRANTED) {
+                            //弹出对话框引导用户去设置
+//                            showDialog();
+                            Toast.makeText(StartPageActivity.this, "请求权限被拒绝", Toast.LENGTH_LONG).show();
+                            break;
+                        } else {
+
+                        }
+                    }
+                    String isUpdate = (String) SPUtils.getInstance().get("H5VersionName","");
+                    if(TextUtils.isEmpty(isUpdate)) {
+                        //权限回调
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.e(TAG, "down had Permission ");
+                                checkH5Version();
+                            }
+                        });
+                    }
+                }
+                break;
+        }
+    }
+
+    private void toHome() {
+
+        Log.e(TAG, "initWidget: end use " + (new Date().getTime() - time) +" ms");
+
+        Intent intent = new Intent(StartPageActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void loadAdvImg(String fileName) {
         RemoteRepository
                 .getInstance()
                 .getAdMessage(fileName)
@@ -429,6 +583,72 @@ public class StartPageActivity extends BaseActivity {
         } catch (IOException e) {
             return false;
         }
+    }
+
+
+
+
+    /**
+     * 第三方插件下载
+     */
+    private void downH5(String url, String H5VersionName) {
+        Log.e(TAG, "initH5Page: start");
+        FileDownloader.setup(mContext);
+        FileDownloader.getImpl().create(url)
+                .setPath(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"h5_zip")
+                .setForceReDownload(true)
+                .setListener(new FileDownloadListener() {
+                    //等待
+                    @Override
+                    protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+                        Log.e(TAG, "pending: " );
+                    }
+
+                    //下载进度回调
+                    @Override
+                    protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+//                            progressBar.setProgress((soFarBytes * 100 / totalBytes));
+//                            progressDialog.setProgress((soFarBytes * 100 / totalBytes));
+                        Log.e(TAG, "progress: " + (soFarBytes * 100 / totalBytes));
+                    }
+
+                    //下载完成
+                    @Override
+                    protected void completed(BaseDownloadTask task) {
+                        String[] split1 = task.getPath().split("0/");
+                        try {
+                            //解压ZIP压缩包
+                            ZipUtils.UnZipFolder(Constant.saveH5FilePath, Constant.unH5ZipPath);
+                            SPUtils.getInstance().put(Constant.H5_VERSION, H5VersionName);
+
+                            toHome();
+                            Log.e(TAG, "initH5Page: load end");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e(TAG, "initH5Page: load error");
+                        }
+                    }
+
+                    //暂停
+                    @Override
+                    protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+
+                    }
+
+                    //下载出错
+                    @Override
+                    protected void error(BaseDownloadTask task, Throwable e) {
+                        Toast.makeText(mContext, "系统更新异常", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                    //已存在相同下载
+                    @Override
+                    protected void warn(BaseDownloadTask task) {
+                        Log.e(TAG, "warn: " + task);
+                    }
+                }).start();
+
     }
 
 

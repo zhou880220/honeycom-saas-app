@@ -1,10 +1,10 @@
 package com.honeycom.saas.mobile.ui.activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -19,8 +19,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ValueCallback;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
-import android.webkit.WebStorage;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -70,14 +73,15 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import okhttp3.Call;
+import ren.yale.android.cachewebviewlib.WebViewCacheInterceptorInst;
 
 /**
 * author : zhoujr
 * date : 2021/9/18 15:54
 * desc : 系统主页
 */
-public class MainActivity  extends BaseActivity {
-    private static final String TAG = "MainActivity_TAG";
+public class HomeActivity extends BaseActivity {
+    private static final String TAG = "HomeActivity_TAG";
     private static final int VIDEO_PERMISSIONS_CODE = 1;
     //请求相机
     private static final int REQUEST_CAPTURE = 100;
@@ -138,23 +142,23 @@ public class MainActivity  extends BaseActivity {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.activity_main;
+        return R.layout.activity_home;
     }
 
     @Override
     protected void initWidget() {
         super.initWidget();
         mContext = this;
-        Log.e(TAG, "initWidget: start" );
+
         //更改状态栏颜色
         StatusBarCompat.compat(this, ContextCompat.getColor(this, R.color.status_text));
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //            //修改为深色，因为我们把状态栏的背景色修改为主题色白色，默认的文字及图标颜色为白色，导致看不到了。
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
 
         //加载页面
-        webView(Constant.text_url);
+        webView(Constant.text_url1);
 
         myHandler.postDelayed(new Runnable() {
             @Override
@@ -210,8 +214,61 @@ public class MainActivity  extends BaseActivity {
         }
         //设置Webview需要的条件
 //        setSettings();
-        //Handler做为通信桥梁的作用，接收处理来自H5数据及回传Native数据的处理，当h5调用send()发送消息的时候，调用MyHandlerCallBack
         mNewWeb.setDefaultHandler(new MyHandlerCallBack(mOnSendDataListener));
+        Log.i(TAG, "load url: "+url);
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            mNewWeb.setWebViewClient(new WebViewClient(){
+
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Nullable
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                    return  WebViewCacheInterceptorInst.getInstance().interceptRequest(request);
+                }
+
+                @Nullable
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                    return  WebViewCacheInterceptorInst.getInstance().interceptRequest(url);
+                }
+            });
+
+            mNewWeb.loadUrl(url);
+        }else {
+            mNewWeb.setWebViewClient(new WebViewClient(){
+
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                    WebViewCacheInterceptorInst.getInstance().loadUrl(mNewWeb,request.getUrl().toString());
+                    return true;
+                }
+
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    WebViewCacheInterceptorInst.getInstance().loadUrl(mNewWeb, url);
+                    return true;
+                }
+
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Nullable
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                    return  WebViewCacheInterceptorInst.getInstance().interceptRequest(request);
+                }
+
+                @Nullable
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                    return  WebViewCacheInterceptorInst.getInstance().interceptRequest(url);
+                }
+            });
+            WebViewCacheInterceptorInst.getInstance().loadUrl(mNewWeb, url);
+        }
+
+
+
 
 
         WebSettings webSettings = mNewWeb.getSettings();
@@ -225,6 +282,11 @@ public class MainActivity  extends BaseActivity {
         mNewWeb.setWebChromeClient(myChromeWebClient);
         MyWebViewClient myWebViewClient = new MyWebViewClient(mNewWeb, mWebError);
         mNewWeb.setWebViewClient(myWebViewClient);
+//
+//        //Handler做为通信桥梁的作用，接收处理来自H5数据及回传Native数据的处理，当h5调用send()发送消息的时候，调用MyHandlerCallBack
+        mNewWeb.setDefaultHandler(new MyHandlerCallBack(mOnSendDataListener));
+//        myChromeWebClient = new MWebChromeClient(this, mNewWebProgressbar, mWebError);
+//        MyWebViewClient myWebViewClient = new MyWebViewClient(mNewWeb, mWebError);
         myWebViewClient.setOnCityClickListener(new MyWebViewClient.OnCityChangeListener() {
             @Override
             public void onCityClick(String name) {  //动态监听页面加载链接
@@ -236,20 +298,20 @@ public class MainActivity  extends BaseActivity {
 //                        mApplyBackImage1.setVisibility(View.GONE);
                     } else {
 //                        mApplyBackImage1.setVisibility(View.VISIBLE);
-                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                                != PackageManager.PERMISSION_GRANTED) {
-                            //申请READ_EXTERNAL_STORAGE权限
-                            ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                    ADDRESS_PERMISSIONS_CODE);
-                        }
+//                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                                != PackageManager.PERMISSION_GRANTED) {
+//                            //申请READ_EXTERNAL_STORAGE权限
+//                            ActivityCompat.requestPermissions(HomeActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                    ADDRESS_PERMISSIONS_CODE);
+//                        }
                     }
                 } catch (Exception e) {
-                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        //申请READ_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                ADDRESS_PERMISSIONS_CODE);
-                    }
+//                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                            != PackageManager.PERMISSION_GRANTED) {
+//                        //申请READ_EXTERNAL_STORAGE权限
+//                        ActivityCompat.requestPermissions(HomeActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                ADDRESS_PERMISSIONS_CODE);
+//                    }
 //                    mApplyBackImage1.setVisibility(View.VISIBLE);
                 }
 
@@ -284,9 +346,6 @@ public class MainActivity  extends BaseActivity {
 //                }
             }
         });
-
-        Log.e(TAG, "load url: "+url);
-        mNewWeb.loadUrl(url);
 
 
         //回退监听
@@ -400,8 +459,8 @@ public class MainActivity  extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 try {
-                    CleanDataUtils.clearAllCache(Objects.requireNonNull(MainActivity.this));
-                    clearSize = CleanDataUtils.getTotalCacheSize(Objects.requireNonNull(MainActivity.this));
+                    CleanDataUtils.clearAllCache(Objects.requireNonNull(HomeActivity.this));
+                    clearSize = CleanDataUtils.getTotalCacheSize(Objects.requireNonNull(HomeActivity.this));
                     if (!clearSize.isEmpty()) {
                         ChaceSize = false;
                         function.onCallBack(clearSize);
@@ -419,10 +478,10 @@ public class MainActivity  extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 try {
                     //权限判断
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                    if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.CAMERA)
                             != PackageManager.PERMISSION_GRANTED) {
                         //申请READ_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                 VIDEO_PERMISSIONS_CODE);
                     } else {
                         if (!data.isEmpty()) {
@@ -451,10 +510,10 @@ public class MainActivity  extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 try {
                     //权限判断
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
                         //申请READ_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                                 VIDEO_PERMISSIONS_CODE);
                     } else {
                         if (!data.isEmpty()) {
@@ -567,7 +626,7 @@ public class MainActivity  extends BaseActivity {
                             Intent intent;
                             //生成app单独跳转一个页面
                             if (redirectUrl.contains("/p/")) {
-                                intent = new Intent(MainActivity.this, ExecuteActivity.class);
+                                intent = new Intent(HomeActivity.this, ExecuteActivity.class);
                                 if (redirectUrl.contains("?")) {
                                     redirectUrl = redirectUrl +"&r="+new Date().getTime();
                                 }else {
@@ -582,7 +641,7 @@ public class MainActivity  extends BaseActivity {
                                 startActivity(intent);
                             }else {
                                 //其他系统待定
-                                intent = new Intent(MainActivity.this, ExecuteActivity.class);
+                                intent = new Intent(HomeActivity.this, ExecuteActivity.class);
                                 intent.putExtra("url", redirectUrl);
                                 startActivity(intent);
                             }
@@ -692,12 +751,12 @@ public class MainActivity  extends BaseActivity {
                 Log.e(TAG, "startIntentZing: start" );
                 try {
                     // 权限申请
-                    if (ContextCompat.checkSelfPermission(MainActivity.this,
+                    if (ContextCompat.checkSelfPermission(HomeActivity.this,
                             Manifest.permission.RECORD_AUDIO)
                             != PackageManager.PERMISSION_GRANTED) {
                         Log.e(TAG, "handler: no permission");
                         //权限还没有授予，需要在这里写申请权限的代码
-                        ActivityCompat.requestPermissions(MainActivity.this,
+                        ActivityCompat.requestPermissions(HomeActivity.this,
                                 APPLY_PERMISSIONS_APPLICATION, 200);
                     } else {
                         Log.e(TAG, "handler: has permission");
@@ -725,7 +784,7 @@ public class MainActivity  extends BaseActivity {
                     if (!data.isEmpty()) {
                         Map map = new Gson().fromJson(data, Map.class);
                         String type = (String) map.get("type");
-                        Intent intent = new Intent(MainActivity.this, ReminderActivity.class);
+                        Intent intent = new Intent(HomeActivity.this, ReminderActivity.class);
                         intent.putExtra("type", type);
                         startActivity(intent);
                     }
@@ -943,10 +1002,10 @@ public class MainActivity  extends BaseActivity {
         }
         switch (requestCode) {
             case NOT_NOTICE:
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
+                if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.RECORD_AUDIO)
                         != PackageManager.PERMISSION_GRANTED) {
                     //申请READ_EXTERNAL_STORAGE权限
-                    ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                    ActivityCompat.requestPermissions(HomeActivity.this, APPLY_PERMISSIONS_APPLICATION,
                             ADDRESS_PERMISSIONS_CODE);
                 }//由于不知道是否选择了允许所以需要再次判断
                 break;

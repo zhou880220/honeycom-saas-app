@@ -62,11 +62,11 @@ public class ReminderActivity extends BaseActivity {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
         if (type.equals("1")) {
-            webview("http://mestestweb-product.zhizaoyun.com/app1", "用户协议");
-//            webview("file:///android_asset/reminder.html", "用户协议");
+//            webview("http://mestestweb-product.zhizaoyun.com/app1", "用户协议");
+            webview("file:///android_asset/reminder.html", "用户协议");
         } else  {
-            webview("http://mestestweb-product.zhizaoyun.com/app", "隐私政策");
-//            webview("file:///android_asset/policy.html", "隐私政策");
+//            webview("http://mestestweb-product.zhizaoyun.com/app", "隐私政策");
+            webview("file:///android_asset/policy.html", "隐私政策");
         }
     }
 

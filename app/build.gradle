@@ -63,11 +63,6 @@ dependencies {
     // 友盟封装
     implementation project(':umeng')
 
-    //友盟Push依赖
-//    implementation  'com.umeng.umsdk:common:9.4.4'// 必选
-//    implementation 'com.umeng.umsdk:push:6.4.5'
-
-
     //RxJava
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
@@ -98,5 +93,11 @@ dependencies {
 
     /*扫一扫*/
     implementation 'com.github.yuzhiqiang1993:zxing:2.2.8'
+
+    //下载插件
+    implementation 'com.liulishuo.filedownloader:library:1.7.7'
+
+    //webview 缓存版
+    implementation 'ren.yale.android:cachewebviewlib:2.2.1'
 
 }
