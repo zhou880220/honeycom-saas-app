@@ -117,7 +117,7 @@ public class StartPageActivity extends BaseActivity {
             super.handleMessage(msg);
             countNum();
             if (continueCount) {
-                handler2.sendMessageDelayed(handler.obtainMessage(-1),1000);
+                handler2.sendMessageDelayed(handler2.obtainMessage(-1),1000);
             }
         }
     };
@@ -158,14 +158,6 @@ public class StartPageActivity extends BaseActivity {
 //            layoutSkip.setVisibility(View.INVISIBLE);
             djs = initTimeCount;
             handler2.sendMessage(handler2.obtainMessage(-1));
-
-            //h5 检测h5版本，有新版则下载
-//            handler.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    checkH5Version();
-//                }
-//            });
         }
 
         //获取友盟推送deviceToken

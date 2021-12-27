@@ -62,7 +62,7 @@ public class Constant {
     public static final String WEBVERSION = INTERFACE_URL+"/api-p/tClientVersion/newVersion?equipmentType=1&platformType=saas&updateVersion=";//apk升级功能
     public static final String APP_BG_CHECK = INTERFACE_URL+"/api-p/tAdvSet/phoneOne?equipmentType=1&compare=";//http://172.16.14.231:18089/
     public static final String userPushRelation = INTERFACE_URL+"/api-n/userDevice/register";//保存用户推送关系
-    public static final String webVersionCheck = INTERFACE_URL+"/api-p/tClientVersion/selectH5";//保存用户推送关系
+    public static final String webVersionCheck = INTERFACE_URL+"/api-p/tClientVersion/selectH5";//获取H5最新版本
 
 
     public static final String NO_AUTH_TIP = "您的企业暂未开通此应用，请联系企业管理页开通后再试。";
