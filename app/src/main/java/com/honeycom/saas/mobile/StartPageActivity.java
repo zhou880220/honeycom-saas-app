@@ -260,7 +260,8 @@ public class StartPageActivity extends BaseActivity {
         }
         if (timeCount == initTimeCount) {
             continueCount = false;
-            checkH5Version();
+            toHome();
+//            checkH5Version();
 //            finish();
             Log.e(TAG, "countNum: b " );
         }
