@@ -221,8 +221,8 @@ public class StartPageActivity extends BaseActivity {
                                 case R.id.tv_dialog_ok:
                                     SPUtils.getInstance().put("isFirstUse", false);
                                     //这里是一开始的申请权限，不懂可以看我之前的博客
-//                                    startHome();
-                                    toHome();
+                                    startHome();
+//                                    toHome();
                                     break;
                                 case R.id.tv_dialog_no:
                                     finish();
@@ -249,9 +249,8 @@ public class StartPageActivity extends BaseActivity {
         if (timeCount == 3) {//数秒，超过3秒后如果没有网络，则进入下一个页面
             if (!NetworkUtils.isConnected()) {
                 continueCount = false;
-                toHome();
-//                checkH5Version();
-//                finish();
+//                toHome();
+                checkH5Version();
             }
             if (ivAdvertising !=null) {
                 ivAdvertising.setVisibility(View.VISIBLE);
@@ -262,9 +261,8 @@ public class StartPageActivity extends BaseActivity {
         }
         if (timeCount == initTimeCount) {
             continueCount = false;
-            toHome();
-//            checkH5Version();
-//            finish();
+//            toHome();
+            checkH5Version();
             Log.e(TAG, "countNum: b " );
         }
         return timeCount;
@@ -374,7 +372,7 @@ public class StartPageActivity extends BaseActivity {
 
         Log.e(TAG, "initWidget: end use " + (new Date().getTime() - time) +" ms");
 
-        Intent intent = new Intent(StartPageActivity.this, HomeActivity.class);
+        Intent intent = new Intent(StartPageActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
     }
