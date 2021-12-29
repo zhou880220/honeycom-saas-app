@@ -278,12 +278,10 @@ public class StartPageActivity extends BaseActivity {
             ActivityCompat.requestPermissions(StartPageActivity.this, APPLY_PERMISSIONS_APPLICATION,
                     ADDRESS_PERMISSIONS_CODE);
         }else {
+
+            Log.e(TAG, "check had Permission ");
             checkH5Version();
         }
-
-//        Intent intent= new Intent(StartPageActivity.this, ExecuteActivity.class);
-//        intent.putExtra("url", Constant.text_url);
-//        startActivity(intent);
     }
 
     /**
@@ -584,10 +582,11 @@ public class StartPageActivity extends BaseActivity {
      * 第三方插件下载
      */
     private void downH5(String url, String H5VersionName) {
-        Log.e(TAG, "initH5Page: start");
+        Log.e(TAG, "initH5Page: start: "+url);
+        Log.e(TAG, "initH5Page: H5VersionName: "+H5VersionName);
         FileDownloader.setup(mContext);
         FileDownloader.getImpl().create(url)
-                .setPath(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"h5_zip")
+                .setPath(mContext.getExternalFilesDir(null)  + File.separator +"fengchaomeiyun" + File.separator +"h5_zip")
                 .setForceReDownload(true)
                 .setListener(new FileDownloadListener() {
                     //等待
@@ -608,6 +607,7 @@ public class StartPageActivity extends BaseActivity {
                     @Override
                     protected void completed(BaseDownloadTask task) {
                         String[] split1 = task.getPath().split("0/");
+                        Log.e(TAG, "initH5Page: download complete");
                         try {
                             //解压ZIP压缩包
                             ZipUtils.UnZipFolder(Constant.saveH5FilePath, Constant.unH5ZipPath);
@@ -630,6 +630,7 @@ public class StartPageActivity extends BaseActivity {
                     //下载出错
                     @Override
                     protected void error(BaseDownloadTask task, Throwable e) {
+                        task.getErrorCause().printStackTrace();
                         Toast.makeText(mContext, "系统更新异常", Toast.LENGTH_SHORT).show();
 
                     }

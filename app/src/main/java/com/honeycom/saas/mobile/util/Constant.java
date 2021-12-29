@@ -2,6 +2,8 @@ package com.honeycom.saas.mobile.util;
 
 import android.os.Environment;
 
+import com.honeycom.saas.mobile.App;
+
 import java.io.File;
 
 //常量类
@@ -11,8 +13,8 @@ public class Constant {
      * 页面前缀 ：http://mestestwebk8s.zhizaoyun.com:31810/
      * 接口前缀 ：http://mestestapik8s.zhizaoyun.com:31008  "https://h5-prod.zhizaoyun.com/app-miota-v1/"; //"http://172.16.41.125:9542";//
      */
-//    public static final String PAGE_URL = "https://fmtest-app.zhizaoyun.com:30443";//"http://mestestwebk8s.zhizaoyun.com:31811";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]);
-//    public static final String INTERFACE_URL =  "https://mestestapik8s.zhizaoyun.com:30443";//"http://mestestapik8s.zhizaoyun.com:31008";
+    public static final String PAGE_URL = "https://fmtest-app.zhizaoyun.com:30443";//"http://mestestwebk8s.zhizaoyun.com:31811";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]);
+    public static final String INTERFACE_URL =  "https://mestestapik8s.zhizaoyun.com:30443";//"http://mestestapik8s.zhizaoyun.com:31008";
 
     /**
      * 生产环境前缀
@@ -20,10 +22,10 @@ public class Constant {
      * 接口前缀 ：http://indapp-api.zhizaoyun.com
      */
 
-    public static final String PAGE_URL = "http://fm-app.zhizaoyun.com";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
-    public static final String INTERFACE_URL =  "http://indapp-api.zhizaoyun.com";
-    public static final String LOCAL_PAGE_URL = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app"; //FileUtils.getCachePath()+ File.separator + "h5_cache";
-
+//    public static final String PAGE_URL = "http://fm-app.zhizaoyun.com";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
+//    public static final String INTERFACE_URL =  "http://indapp-api.zhizaoyun.com";
+//    public static final String LOCAL_PAGE_URL = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app"; //FileUtils.getCachePath()+ File.separator + "h5_cache";
+      public static final String LOCAL_PAGE_URL = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
     /**
      * 调试环境前缀
      * 页面前缀 ：https://mobileclientthird.zhizaoyun.com/
@@ -75,8 +77,11 @@ public class Constant {
 
     public static final String NOTICE_LIST = "noticeList";
 
-    public static final String saveH5FilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"h5_zip";//FileUtils.getCachePath()+ File.separator + "h5_zip"+ File.separator ;
-    public static final String unH5ZipPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
+//    public static final String saveH5FilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"h5_zip";//FileUtils.getCachePath()+ File.separator + "h5_zip"+ File.separator ;
+//    public static final String unH5ZipPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
+
+    public static final String saveH5FilePath = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"h5_zip";//FileUtils.getCachePath()+ File.separator + "h5_zip"+ File.separator ;
+    public static final String unH5ZipPath = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
 
 
 }
