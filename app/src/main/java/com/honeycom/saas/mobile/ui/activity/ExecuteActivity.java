@@ -880,8 +880,10 @@ public class ExecuteActivity extends BaseActivity {
                     }
                 } else {
                     //进度跳显示
-                    mNewWebProgressbar.setVisibility(View.VISIBLE);
-                    mNewWebProgressbar.setProgress(newProgress);
+                    if (mNewWebProgressbar !=null) {
+                        mNewWebProgressbar.setVisibility(View.VISIBLE);
+                        mNewWebProgressbar.setProgress(newProgress);
+                    }
                 }
                 super.onProgressChanged(view, newProgress);
             }
