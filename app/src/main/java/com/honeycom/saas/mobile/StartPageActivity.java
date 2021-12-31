@@ -195,7 +195,8 @@ public class StartPageActivity extends BaseActivity {
         layoutSkip.setOnClickListener(v -> {
             Log.i(TAG,"skip :");
             continueCount = false;
-            checkH5Version();
+            toHome();
+//            checkH5Version();
 //            finish();
         });
 
