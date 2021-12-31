@@ -195,7 +195,7 @@ public class StartPageActivity extends BaseActivity {
         layoutSkip.setOnClickListener(v -> {
             Log.i(TAG,"skip :");
             continueCount = false;
-            checkH5Version();
+            startHome();
 //            finish();
         });
 
@@ -250,7 +250,7 @@ public class StartPageActivity extends BaseActivity {
             if (!NetworkUtils.isConnected()) {
                 continueCount = false;
 //                toHome();
-                checkH5Version();
+                startHome();
             }
             if (ivAdvertising !=null) {
                 ivAdvertising.setVisibility(View.VISIBLE);
@@ -262,7 +262,7 @@ public class StartPageActivity extends BaseActivity {
         if (timeCount == initTimeCount) {
             continueCount = false;
 //            toHome();
-            checkH5Version();
+            startHome();
             Log.e(TAG, "countNum: b " );
         }
         return timeCount;
