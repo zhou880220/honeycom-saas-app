@@ -574,11 +574,15 @@ public class MainActivity  extends BaseActivity {
                                     redirectUrl = redirectUrl +"?r="+new Date().getTime();
                                 }
                                 intent.putExtra("url", redirectUrl);
-//                                intent.putExtra("token", usertoken1);
-//                                intent.putExtra("userid", userid1);
-//                                intent.putExtra("appId", appId);
-//                                intent.putExtra("zxIdTouTiao", zxIdTouTiao);
-//                                intent.putExtra("isFromHome", currentUrl.contains("apply") ? "0": "1");
+                                startActivity(intent);
+                            }else if (redirectUrl.contains("/ws")) {
+                                intent = new Intent(MainActivity.this, WeighActivity.class);
+                                if (redirectUrl.contains("?")) {
+                                    redirectUrl = redirectUrl +"&r="+new Date().getTime();
+                                }else {
+                                    redirectUrl = redirectUrl +"?r="+new Date().getTime();
+                                }
+                                intent.putExtra("url", redirectUrl);
                                 startActivity(intent);
                             }else {
                                 //其他系统待定

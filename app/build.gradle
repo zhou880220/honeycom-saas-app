@@ -100,4 +100,10 @@ dependencies {
     //webview 缓存版
     implementation 'ren.yale.android:cachewebviewlib:2.2.1'
 
+    //称重系统集成所需第三方
+    implementation 'com.github.GrenderG:Toasty:1.5.2'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.2'
+//    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+
 }

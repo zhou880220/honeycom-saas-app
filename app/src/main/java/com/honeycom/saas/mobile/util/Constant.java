@@ -13,8 +13,8 @@ public class Constant {
      * 页面前缀 ：http://mestestwebk8s.zhizaoyun.com:31810/
      * 接口前缀 ：http://mestestapik8s.zhizaoyun.com:31008  "https://h5-prod.zhizaoyun.com/app-miota-v1/"; //"http://172.16.41.125:9542";//
      */
-//    public static final String PAGE_URL = "https://fmtest-app.zhizaoyun.com:30443";//"http://mestestwebk8s.zhizaoyun.com:31811";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]);
-//    public static final String INTERFACE_URL =  "https://mestestapik8s.zhizaoyun.com:30443";//"http://mestestapik8s.zhizaoyun.com:31008";
+    public static final String PAGE_URL = "https://fmtest-app.zhizaoyun.com:30443";//"http://mestestwebk8s.zhizaoyun.com:31811";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]);
+    public static final String INTERFACE_URL =  "https://mestestapik8s.zhizaoyun.com:30443";//"http://mestestapik8s.zhizaoyun.com:31008";
 
     /**
      * 生产环境前缀
@@ -22,8 +22,8 @@ public class Constant {
      * 接口前缀 ：http://indapp-api.zhizaoyun.com
      */
 
-    public static final String PAGE_URL = "https://fm-app.zhizaoyun.com";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
-    public static final String INTERFACE_URL =  "https://indapp-api.zhizaoyun.com";
+//    public static final String PAGE_URL = "https://fm-app.zhizaoyun.com";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
+//    public static final String INTERFACE_URL =  "https://indapp-api.zhizaoyun.com";
 //    public static final String LOCAL_PAGE_URL = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app"; //FileUtils.getCachePath()+ File.separator + "h5_cache";
       public static final String LOCAL_PAGE_URL = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
     /**
@@ -64,6 +64,7 @@ public class Constant {
     public static final String WEBVERSION = INTERFACE_URL+"/api-p/tClientVersion/newVersion?equipmentType=1&platformType=saas&updateVersion=";//apk升级功能
     public static final String APP_BG_CHECK = INTERFACE_URL+"/api-p/tAdvSet/phoneOne?equipmentType=1&compare=";//http://172.16.14.231:18089/
     public static final String userPushRelation = INTERFACE_URL+"/api-n/userDevice/register";//保存用户推送关系
+    public static final String userUnbindRelation = INTERFACE_URL+"/api-n/userDevice/logout";//保存用户推送关系
     public static final String webVersionCheck = INTERFACE_URL+"/api-p/tClientVersion/selectH5";//获取H5最新版本
 
 

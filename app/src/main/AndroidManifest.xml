@@ -28,6 +28,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -124,6 +125,8 @@
         <activity android:name=".ui.activity.ReminderActivity" android:theme="@style/AppThemeThree" android:screenOrientation="portrait"/>
 
         <activity android:name=".ui.activity.ExecuteActivity"  android:theme="@style/AppThemeThree" android:screenOrientation="portrait"/>
+
+        <activity android:name=".ui.activity.WeighActivity"  android:theme="@style/AppThemeThree" android:screenOrientation="portrait"/>
 
     </application>
 

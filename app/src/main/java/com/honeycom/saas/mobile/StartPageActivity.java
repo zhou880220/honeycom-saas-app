@@ -371,6 +371,7 @@ public class StartPageActivity extends BaseActivity {
         Log.e(TAG, "initWidget: end use " + (new Date().getTime() - time) +" ms");
 
         Intent intent = new Intent(StartPageActivity.this, MainActivity.class);
+//        intent.setClassName()
         startActivity(intent);
         finish();
     }
