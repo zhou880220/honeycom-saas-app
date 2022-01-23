@@ -857,7 +857,7 @@ public class WeighActivity extends BaseActivity {
 
         mNewWeb.registerHandler("switchNetwork", new BridgeHandler() {
             @Override
-            public void handler(String data, CallBackFunction function) {
+            synchronized public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "switchNetwork: start: "+data);
                 try {
                     Gson gson = new Gson();
