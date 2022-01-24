@@ -2,6 +2,12 @@ package com.honeycom.saas.mobile.ws;
 
 import android.util.Log;
 
+import org.java_websocket.WebSocket;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,12 +15,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-
-import org.java_websocket.WebSocket;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
 
 
 /**
@@ -46,26 +46,27 @@ public class WSServer extends WebSocketServer {
         conn.send("ws-s Welcome to the server!"); //This method sends a message to the new client
         broadcast("new connection: " + handshake
                 .getResourceDescriptor()); //This method sends a message to all clients connected
-        Log.e("WSServer", conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
+        System.out.println(
+                conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         broadcast(conn + " has left the room!");
-        Log.e("WSServer", conn + " has left the room!");
+        System.out.println(conn + " has left the room!");
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
         broadcast(message);
-        Log.e("WSServer", "ws-s: " + conn + ": " + message);
+        System.out.println("ws-s: " + conn + ": " + message);
         sendQ.put(message);
     }
 
     @Override
     public void onMessage(WebSocket conn, ByteBuffer message) {
         broadcast(message.array());
-        Log.e("WSServer", conn + ": " + message);
+        System.out.println(conn + ": " + message);
 //        String sendMsg = message.toString();
 //        sendQ.put(sendMsg);
     }
@@ -81,7 +82,7 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        Log.e("WSServer", "Server started!");
+        System.out.println("Server started!");
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
     }
@@ -94,7 +95,7 @@ public class WSServer extends WebSocketServer {
         try {
             WSServer s = new WSServer(port, mq, sendQ);
             s.start();
-            Log.e("WSServer", "ChatServer started on port: " + s.getPort());
+            System.out.println("ChatServer started on port: " + s.getPort());
 
             BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
@@ -103,16 +104,23 @@ public class WSServer extends WebSocketServer {
 //            WSServer.shareBuf.to
 //                Thread.sleep(500);
                 String taskStr = mq.take();
-                Log.e("WSServer", taskStr);
-                s.broadcast(taskStr);
+//                Log.d(WebViewActivity.WVTaskName, taskStr);
+                if (taskStr.length() > 0) s.broadcast(taskStr);
+                Thread.sleep(50);
+//                if (bqInterrupt) {
+//                    Thread.currentThread().interrupt();
+//                }
 //            if (in.equals("exit")) {
 //                s.stop(1000);
 //                break;
 //            }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+//        finally {
+//            Thread.currentThread().interrupt();
+//        }
     }
 
 }

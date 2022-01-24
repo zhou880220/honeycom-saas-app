@@ -68,6 +68,8 @@ import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
 import com.honeycom.saas.mobile.ws.BluetoothServer;
+import com.honeycom.saas.mobile.ws.BoardPosts;
+import com.honeycom.saas.mobile.ws.BoardPostsPrinter;
 import com.honeycom.saas.mobile.ws.MessageQueue;
 import com.honeycom.saas.mobile.ws.PrintBean;
 import com.honeycom.saas.mobile.ws.PrinterS;
@@ -94,6 +96,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import butterknife.BindView;
+import es.dmoral.toasty.Toasty;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -168,13 +171,17 @@ public class WeighActivity extends BaseActivity {
 //    private List<RecentlyApps.DataBean> appData;
     private String path;
 
-    private MessageQueue messageQueue = new MessageQueue(100);
-    private MessageQueue sendQueue = new MessageQueue(100);
+//    private MessageQueue messageQueue = new MessageQueue(100);
+//    private MessageQueue sendQueue = new MessageQueue(100);
 
-    public Thread listerT = null;
-    public Thread senderT = null;
-    public Thread wsT = null;
-    public BluetoothServer bts = null;
+//    public Thread listerT = null;
+//    public Thread senderT = null;
+//    public Thread wsT = null;
+//    public BluetoothServer bts = null;
+
+
+    BoardPosts bp = null;
+    BoardPostsPrinter bpp = null;
 
     //Handler
     private Handler handler = new Handler(new Handler.Callback()  {
@@ -862,41 +869,10 @@ public class WeighActivity extends BaseActivity {
                 try {
                     Gson gson = new Gson();
                     WeighBean weighBean =  gson.fromJson(data, WeighBean.class);
-
-                    if (listerT != null) {
-                        listerT.interrupt();
-                        listerT = null;
-                    }
-                    if (senderT != null) {
-                        senderT.interrupt();
-                        senderT = null;
-                    }
-                    if (wsT != null) {
-                        wsT.interrupt();
-                        wsT = null;
-                    }
-
-                    // lister
-                    if (listerT == null) {
-                        listerT = new Thread(() -> {
-                            new SocketServer(messageQueue, sendQueue).launching(weighBean.getIp(), Integer.parseInt(weighBean.getPort()));
-                        });
-                        listerT.start();
-                    }
-                    // sender
-                    if (senderT == null) {
-                        senderT = new Thread(() -> {
-                            new Sender(messageQueue, sendQueue).launching(weighBean.getIp(), Integer.parseInt(weighBean.getPort()));
-                        });
-                        senderT.start();
-                    }
-
-                    // WS server
-                    if (wsT == null) {
-                        wsT = new Thread(() -> {
-                            WSServer.startWSServer(messageQueue, sendQueue, Integer.parseInt(weighBean.getSelfServerPort()));
-                        });
-                        wsT.start();
+                    if (bp == null) bp = new BoardPosts("6001");
+                    if (bp != null) {
+                        bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
+                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
                     }
                     function.onCallBack("done");
                 } catch (Exception e) {
@@ -936,31 +912,8 @@ public class WeighActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
-                try {
-                    if (bts == null) {
-                        bts = new BluetoothServer();
-                    }
-                    if (bts.isDeviceNull()) {
-                        try {
-                            synchronized (this) {
-                                bts.lockDevice(data);
-                                bts.settleConn();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            function.onCallBack("failed");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            function.onCallBack("failed, " + e.getMessage());
-                        }
-                    }
-                    if (bts != null) {
-                        function.onCallBack("done");
-                    }
-                    function.onCallBack("failed");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                if (bpp == null) bpp = new BoardPostsPrinter();
+                bpp.initBT(data);
             }
         });
 
@@ -969,12 +922,8 @@ public class WeighActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printByBluetooth: start"+data);
-                try {
-                    bts.write(data);
-                } catch (Exception e) {
-                    NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
-                    e.printStackTrace();
-                }
+                if (bpp == null) return;
+                bpp.BTPrint(data);
             }
         });
 
@@ -982,14 +931,9 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("closeBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "closeBluetooth: start"+data);
-                try {
-                    bts.close();
-                    bts = null;
-                    function.onCallBack("");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Log.e(TAG, "closeBluetooth: start" + data);
+                if (bpp == null) return;
+                bpp.BTClose();
             }
         });
 
@@ -997,187 +941,6 @@ public class WeighActivity extends BaseActivity {
 
     }
 
-
-
-    class MJavaScriptInterface {
-        private Context context;
-
-        public MJavaScriptInterface(Context context) {
-            this.context = context;
-        }
-
-
-        @JavascriptInterface
-        public String getIP(String jsonString) {
-            Log.e(TAG, "getIP: start" + jsonString);
-            return wifiIpAddress();
-        }
-
-        @JavascriptInterface
-        public String switchNetwork(String ip, String port, String selfServePort) {
-            Log.e(TAG, "switchNetwork: start" + ip);
-            if (listerT != null) {
-                listerT.interrupt();
-                listerT = null;
-            }
-            if (senderT != null) {
-                senderT.interrupt();
-                senderT = null;
-            }
-            if (wsT != null) {
-                wsT.interrupt();
-                wsT = null;
-            }
-
-            // lister
-            if (listerT == null) {
-                listerT = new Thread(() -> {
-                    new SocketServer(messageQueue, sendQueue).launching(ip, Integer.parseInt(port));
-                });
-                listerT.start();
-            }
-            // sender
-            if (senderT == null) {
-                senderT = new Thread(() -> {
-                    new Sender(messageQueue, sendQueue).launching(ip, Integer.parseInt(port));
-                });
-                senderT.start();
-            }
-
-            // WS server
-            if (wsT == null) {
-                wsT = new Thread(() -> {
-                    WSServer.startWSServer(messageQueue, sendQueue, Integer.parseInt(selfServePort));
-                });
-                wsT.start();
-            }
-            return "done";
-        }
-
-        @JavascriptInterface
-        public String closeNetwork(String msg) {
-            Log.e(TAG, "closeNetwork: ");
-            NewToastUtil.showShortToast(getApplicationContext(), "close");
-            if (listerT != null) {
-                listerT.interrupt();
-                listerT = null;
-            }
-            if (senderT != null) {
-                senderT.interrupt();
-                senderT = null;
-            }
-            if (wsT != null) {
-                wsT.interrupt();
-                wsT = null;
-            }
-            return "done";
-        }
-
-        // -----------------------------------------------------------------------------------------
-        // -----------------------------------------------------------------------------------------
-        @JavascriptInterface
-        public String printDirect(String ip, String port, String zplString) {
-            Log.e(TAG, "printDirect: ");
-            String test = String.valueOf((int) (Math.random() * 50 + 1));
-            new Thread(() -> {
-                PrinterS s = new PrinterS();
-                try {
-                    s.run(ip, port, zplString);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
-            return "send done " + test + " ,";
-//            return wifiIpAddress(getApplicationContext());
-        }
-
-        public BluetoothServer bts = null;
-
-        @JavascriptInterface
-        public String createBluetooth(String msg, String addr) {
-            Log.e(TAG, "createBluetooth: ");
-            if (this.bts == null) {
-                this.bts = new BluetoothServer();
-            }
-            if (this.bts.isDeviceNull()) {
-//                Toasty.info(getApplicationContext(), "bluetooth init success.", Toast.LENGTH_LONG, false).show();
-                try {
-                    synchronized (this) {
-                        this.bts.lockDevice(addr);
-                        this.bts.settleConn();
-                    }
-                } catch (IOException e) {
-//                    Toasty.warning(getApplicationContext(), "init failed", Toast.LENGTH_LONG, false).show();
-                    e.printStackTrace();
-                    return "failed";
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return "failed, " + e.getMessage();
-                }
-            }
-//            Toasty.info(getApplicationContext(), "bluetooth was go already.", Toast.LENGTH_LONG, false).show();
-            if (this.bts != null) {
-                return "done";
-            }
-            return "failed";
-        }
-
-        @JavascriptInterface
-        public String printByBluetooth(String zplStr) {
-            try {
-                Log.e(TAG, "printByBluetooth: ");
-                this.bts.write(zplStr);
-            } catch (IOException e) {
-                NewToastUtil.showShortToast(getApplicationContext(), "io failed.");
-                e.printStackTrace();
-            } catch (Exception e) {
-                NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
-                e.printStackTrace();
-            }
-            return "";
-        }
-
-        @JavascriptInterface
-        public String closeBluetooth(String msg) throws IOException {
-            this.bts.close();
-            this.bts = null;
-            return "";
-        }
-
-
-        //        CountDownLatch latch = new CountDownLatch(1);
-//        String takePhotoValue = null;
-//        private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-//            if (result.getContents() == null) {
-////                Toast.makeText(WebViewActivity.this, "Cancelled", Toast.LENGTH_LONG).show();
-//                latch.countDown();
-//                takePhotoValue = "";
-//            } else {
-////                Toast.makeText(WebViewActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
-//                latch.countDown();
-//                takePhotoValue = result.getContents();
-//            }
-//            // todo return qrcode...
-//        });
-        @JavascriptInterface
-        public String getQRCode(String msg) throws InterruptedException {
-//            barcodeLauncher.launch(new ScanOptions());
-//            latch.await();
-//            return takePhotoValue;
-            Log.e(TAG, "startIntentZing: ");
-            try {
-                ZxingConfig config = new ZxingConfig();
-                config.setShowAlbum(false);
-                Intent intent = new Intent(mContext, CaptureActivity.class);
-                intent.putExtra(com.yzq.zxinglibrary.common.Constant.INTENT_ZXING_CONFIG, config);
-                startActivityForResult(intent, REQUEST_CODE_SCAN);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return "done";
-        }
-
-    }
 
     /**
      * 获取wifi地址
