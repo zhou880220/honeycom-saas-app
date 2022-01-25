@@ -1,17 +1,7 @@
 package com.honeycom.saas.mobile.ws;
 
-import android.os.FileUtils;
-
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-//import java.net.Socket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 //import org.apache.commons.io.FileUtils;
 

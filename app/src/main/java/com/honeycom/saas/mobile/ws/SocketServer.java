@@ -1,16 +1,15 @@
 package com.honeycom.saas.mobile.ws;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-/**
- * 自定义socket
- */
+import static com.honeycom.saas.mobile.ws.BoardPosts.bqInterrupt;
+
+//import static tech.beeio.v2ws_client.ws.BoardPosts.bqInterrupt;
+
 public class SocketServer {
     // public class SS implements Runnable {
     // ---------------------------------------------------------------------------------------------
@@ -24,27 +23,36 @@ public class SocketServer {
     // ---------------------------------------------------------------------------------------------
 
     public void launching(String ip, int port) {
-        Log.e("SocketServer", "start listen..."+ip);
+        System.out.println("start listen...");
+//        String hostname = "172.16.6.220";
         String hostname = ip; //"172.16.6.220";
-        Log.e("SocketServer", "launched...");
+//        int port = 18899;
+        System.out.println("sss launched...");
         try (Socket socket = new Socket(hostname, port)) {
             InputStream is = socket.getInputStream();
             PrintWriter pw = new PrintWriter(socket.getOutputStream());
 //            while (true) {
-            Log.e("SocketServer", "looping...");
+                System.out.println("sss looping.");
                 byte[] buffer = new byte[1024];
                 int read;
                 while ((read = is.read(buffer)) != -1) {
+                    if (bqInterrupt) {
+                        Thread.currentThread().interrupt();
+                    }
+                    Thread.sleep(50);
                     String output = new String(buffer, 0, read);
                     mq.put(output);
                 }
 //            }
         } catch (UnknownHostException ex) {
-            Log.e("SocketServer", "Server not found: "+ ex.getMessage());
+            System.out.println("Server not found: " + ex.getMessage());
         } catch (IOException ex) {
-            Log.e("SocketServer", "I/O error:  "+ ex.getMessage());
+            System.out.println("I/O error: " + ex.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            Thread.currentThread().interrupt();
         }
-
     }
 
 

@@ -91,7 +91,7 @@ public class MainActivity  extends BaseActivity {
     private static final int ADDRESS_PERMISSIONS_CODE = 200;
     private static final String[] APPLY_PERMISSIONS_APPLICATION = { //相机扫码授权
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
+//            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     /**********************view******************************/
@@ -236,20 +236,20 @@ public class MainActivity  extends BaseActivity {
 //                        mApplyBackImage1.setVisibility(View.GONE);
                     } else {
 //                        mApplyBackImage1.setVisibility(View.VISIBLE);
-                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                                != PackageManager.PERMISSION_GRANTED) {
-                            //申请READ_EXTERNAL_STORAGE权限
-                            ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                    ADDRESS_PERMISSIONS_CODE);
-                        }
+//                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                                != PackageManager.PERMISSION_GRANTED) {
+//                            //申请READ_EXTERNAL_STORAGE权限
+//                            ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                    ADDRESS_PERMISSIONS_CODE);
+//                        }
                     }
                 } catch (Exception e) {
-                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        //申请READ_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                ADDRESS_PERMISSIONS_CODE);
-                    }
+//                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                            != PackageManager.PERMISSION_GRANTED) {
+//                        //申请READ_EXTERNAL_STORAGE权限
+//                        ActivityCompat.requestPermissions(MainActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                ADDRESS_PERMISSIONS_CODE);
+//                    }
 //                    mApplyBackImage1.setVisibility(View.VISIBLE);
                 }
 
@@ -697,7 +697,7 @@ public class MainActivity  extends BaseActivity {
                 try {
                     // 权限申请
                     if (ContextCompat.checkSelfPermission(MainActivity.this,
-                            Manifest.permission.RECORD_AUDIO)
+                            Manifest.permission.CAMERA)
                             != PackageManager.PERMISSION_GRANTED) {
                         Log.e(TAG, "handler: no permission");
                         //权限还没有授予，需要在这里写申请权限的代码

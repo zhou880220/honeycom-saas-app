@@ -68,6 +68,8 @@ import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
 import com.honeycom.saas.mobile.ws.BluetoothServer;
+import com.honeycom.saas.mobile.ws.BoardPosts;
+import com.honeycom.saas.mobile.ws.BoardPostsPrinter;
 import com.honeycom.saas.mobile.ws.MessageQueue;
 import com.honeycom.saas.mobile.ws.PrintBean;
 import com.honeycom.saas.mobile.ws.PrinterS;
@@ -94,6 +96,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import butterknife.BindView;
+import es.dmoral.toasty.Toasty;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -128,7 +131,7 @@ public class WeighActivity extends BaseActivity {
     private static final int REQUEST_PICK = 101;
     private static final String[] APPLY_PERMISSIONS_APPLICATION = { //第三方应用授权
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
+//            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int ADDRESS_PERMISSIONS_CODE = 1;
@@ -168,13 +171,16 @@ public class WeighActivity extends BaseActivity {
 //    private List<RecentlyApps.DataBean> appData;
     private String path;
 
-    private MessageQueue messageQueue = new MessageQueue(100);
-    private MessageQueue sendQueue = new MessageQueue(100);
+//    private MessageQueue messageQueue = new MessageQueue(100);
+//    private MessageQueue sendQueue = new MessageQueue(100);
+//
+//    public Thread listerT = null;
+//    public Thread senderT = null;
+//    public Thread wsT = null;
+//    public BluetoothServer bts = null;
 
-    public Thread listerT = null;
-    public Thread senderT = null;
-    public Thread wsT = null;
-    public BluetoothServer bts = null;
+    BoardPosts bp = null;
+    BoardPostsPrinter bpp = null;
 
     //Handler
     private Handler handler = new Handler(new Handler.Callback()  {
@@ -862,41 +868,10 @@ public class WeighActivity extends BaseActivity {
                 try {
                     Gson gson = new Gson();
                     WeighBean weighBean =  gson.fromJson(data, WeighBean.class);
-
-                    if (listerT != null) {
-                        listerT.interrupt();
-                        listerT = null;
-                    }
-                    if (senderT != null) {
-                        senderT.interrupt();
-                        senderT = null;
-                    }
-                    if (wsT != null) {
-                        wsT.interrupt();
-                        wsT = null;
-                    }
-
-                    // lister
-                    if (listerT == null) {
-                        listerT = new Thread(() -> {
-                            new SocketServer(messageQueue, sendQueue).launching(weighBean.getIp(), Integer.parseInt(weighBean.getPort()));
-                        });
-                        listerT.start();
-                    }
-                    // sender
-                    if (senderT == null) {
-                        senderT = new Thread(() -> {
-                            new Sender(messageQueue, sendQueue).launching(weighBean.getIp(), Integer.parseInt(weighBean.getPort()));
-                        });
-                        senderT.start();
-                    }
-
-                    // WS server
-                    if (wsT == null) {
-                        wsT = new Thread(() -> {
-                            WSServer.startWSServer(messageQueue, sendQueue, Integer.parseInt(weighBean.getSelfServerPort()));
-                        });
-                        wsT.start();
+                    if (bp == null) bp = new BoardPosts("6001");
+                    if (bp != null) {
+                        bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
+                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
                     }
                     function.onCallBack("done");
                 } catch (Exception e) {
@@ -937,27 +912,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
                 try {
-                    if (bts == null) {
-                        bts = new BluetoothServer();
-                    }
-                    if (bts.isDeviceNull()) {
-                        try {
-                            synchronized (this) {
-                                bts.lockDevice(data);
-                                bts.settleConn();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            function.onCallBack("failed");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            function.onCallBack("failed, " + e.getMessage());
-                        }
-                    }
-                    if (bts != null) {
-                        function.onCallBack("done");
-                    }
-                    function.onCallBack("failed");
+                    if (bpp == null) bpp = new BoardPostsPrinter();
+                    bpp.initBT(data);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -970,7 +926,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printByBluetooth: start"+data);
                 try {
-                    bts.write(data);
+                    if (bpp == null) return;
+                    bpp.BTPrint(data);
                 } catch (Exception e) {
                     NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
                     e.printStackTrace();
@@ -984,9 +941,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "closeBluetooth: start"+data);
                 try {
-                    bts.close();
-                    bts = null;
-                    function.onCallBack("");
+                    if (bpp == null) return;
+                    bpp.BTClose();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1016,41 +972,7 @@ public class WeighActivity extends BaseActivity {
         @JavascriptInterface
         public String switchNetwork(String ip, String port, String selfServePort) {
             Log.e(TAG, "switchNetwork: start" + ip);
-            if (listerT != null) {
-                listerT.interrupt();
-                listerT = null;
-            }
-            if (senderT != null) {
-                senderT.interrupt();
-                senderT = null;
-            }
-            if (wsT != null) {
-                wsT.interrupt();
-                wsT = null;
-            }
 
-            // lister
-            if (listerT == null) {
-                listerT = new Thread(() -> {
-                    new SocketServer(messageQueue, sendQueue).launching(ip, Integer.parseInt(port));
-                });
-                listerT.start();
-            }
-            // sender
-            if (senderT == null) {
-                senderT = new Thread(() -> {
-                    new Sender(messageQueue, sendQueue).launching(ip, Integer.parseInt(port));
-                });
-                senderT.start();
-            }
-
-            // WS server
-            if (wsT == null) {
-                wsT = new Thread(() -> {
-                    WSServer.startWSServer(messageQueue, sendQueue, Integer.parseInt(selfServePort));
-                });
-                wsT.start();
-            }
             return "done";
         }
 
@@ -1058,18 +980,6 @@ public class WeighActivity extends BaseActivity {
         public String closeNetwork(String msg) {
             Log.e(TAG, "closeNetwork: ");
             NewToastUtil.showShortToast(getApplicationContext(), "close");
-            if (listerT != null) {
-                listerT.interrupt();
-                listerT = null;
-            }
-            if (senderT != null) {
-                senderT.interrupt();
-                senderT = null;
-            }
-            if (wsT != null) {
-                wsT.interrupt();
-                wsT = null;
-            }
             return "done";
         }
 
@@ -1226,21 +1136,21 @@ public class WeighActivity extends BaseActivity {
 //                        mApplyBackImage1.setVisibility(View.GONE);
                     } else {
 //                        mApplyBackImage1.setVisibility(View.VISIBLE);
-                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                                != PackageManager.PERMISSION_GRANTED) {
-                            //申请READ_EXTERNAL_STORAGE权限
-                            Log.e(TAG, "onCityClick: no permission" );
-                            ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                    ADDRESS_PERMISSIONS_CODE);
-                        }
+//                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                                != PackageManager.PERMISSION_GRANTED) {
+//                            //申请READ_EXTERNAL_STORAGE权限
+//                            Log.e(TAG, "onCityClick: no permission" );
+//                            ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                    ADDRESS_PERMISSIONS_CODE);
+//                        }
                     }
                 } catch (Exception e) {
-                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        //申请READ_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                ADDRESS_PERMISSIONS_CODE);
-                    }
+//                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                            != PackageManager.PERMISSION_GRANTED) {
+//                        //申请READ_EXTERNAL_STORAGE权限
+//                        ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                ADDRESS_PERMISSIONS_CODE);
+//                    }
 //                    mApplyBackImage1.setVisibility(View.VISIBLE);
                 }
             }
@@ -1297,12 +1207,12 @@ public class WeighActivity extends BaseActivity {
                     Log.e(TAG, "onCityClick: no permission camera" );
                     ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
                             ADDRESS_PERMISSIONS_CODE);
-                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    //申请READ_EXTERNAL_STORAGE权限
-                    Log.e(TAG, "onCityClick: no permission record" );
-                    ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                            ADDRESS_PERMISSIONS_CODE);
+//                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                        != PackageManager.PERMISSION_GRANTED) {
+//                    //申请READ_EXTERNAL_STORAGE权限
+//                    Log.e(TAG, "onCityClick: no permission record" );
+//                    ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                            ADDRESS_PERMISSIONS_CODE);
                 }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
                     //申请READ_EXTERNAL_STORAGE权限
