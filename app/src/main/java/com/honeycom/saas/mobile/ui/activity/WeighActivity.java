@@ -394,6 +394,7 @@ public class WeighActivity extends BaseActivity {
 
             }
         });
+
         /**
          * 传递用户登录信息
          */
@@ -913,7 +914,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
                 if (bpp == null) bpp = new BoardPostsPrinter();
-                bpp.initBT(data);
+                if (bpp.initBT(data)) function.onCallBack("success.");
+                function.onCallBack("failed.");
             }
         });
 
@@ -923,7 +925,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printByBluetooth: start"+data);
                 if (bpp == null) return;
-                bpp.BTPrint(data);
+                if(bpp.BTPrint(data)) function.onCallBack("success.");
+                function.onCallBack("failed.");
             }
         });
 
