@@ -873,7 +873,6 @@ public class WeighActivity extends BaseActivity {
                     if (bp == null) bp = new BoardPosts("6001");
                     if (bp != null) {
                         bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
-                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
                     }
                     function.onCallBack("done");
                 } catch (Exception e) {
