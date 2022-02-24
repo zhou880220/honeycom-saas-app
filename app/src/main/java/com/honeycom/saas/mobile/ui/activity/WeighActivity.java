@@ -871,7 +871,7 @@ public class WeighActivity extends BaseActivity {
                     if (bp == null) bp = new BoardPosts("6001");
                     if (bp != null) {
                         bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
-                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
+//                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
                     }
                     function.onCallBack("done");
                 } catch (Exception e) {
@@ -913,7 +913,8 @@ public class WeighActivity extends BaseActivity {
                 Log.e(TAG, "createBluetooth: "+data);
                 try {
                     if (bpp == null) bpp = new BoardPostsPrinter();
-                    bpp.initBT(data);
+                    if (bpp.initBT(data)) function.onCallBack("success.");
+                    function.onCallBack("failed.");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -927,7 +928,8 @@ public class WeighActivity extends BaseActivity {
                 Log.e(TAG, "printByBluetooth: start"+data);
                 try {
                     if (bpp == null) return;
-                    bpp.BTPrint(data);
+                    if(bpp.BTPrint(data)) function.onCallBack("success.");
+                    function.onCallBack("failed.");
                 } catch (Exception e) {
                     NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
                     e.printStackTrace();
