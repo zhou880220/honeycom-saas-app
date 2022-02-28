@@ -18,6 +18,7 @@ public class BoardPostsPrinter {
                     this.bts.lockDevice(addr);
                     this.bts.settleConn();
                 }
+                return true;
             } catch (IOException e) {
 //                    Toasty.warning(getApplicationContext(), "init failed", Toast.LENGTH_LONG, false).show();
                 e.printStackTrace();
@@ -27,7 +28,7 @@ public class BoardPostsPrinter {
                 return false;
             }
         }
-        return true;
+        return false;
     }
 
     public boolean BTPrint(String zplStr) {

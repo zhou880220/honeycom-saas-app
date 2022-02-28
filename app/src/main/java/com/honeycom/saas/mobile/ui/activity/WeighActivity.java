@@ -913,7 +913,11 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
                 if (bpp == null) bpp = new BoardPostsPrinter();
-                if (bpp.initBT(data)) function.onCallBack("success.");
+                if (bpp.initBT(data)) {
+                    function.onCallBack("init success.");
+                    return;
+                }
+
                 function.onCallBack("failed.");
             }
         });
@@ -923,8 +927,15 @@ public class WeighActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printByBluetooth: start"+data);
-                if (bpp == null) return;
-                if(bpp.BTPrint(data)) function.onCallBack("success.");
+                if (bpp == null) {
+                    function.onCallBack("print bpp is null.");
+                    return;
+                }
+                if(bpp.BTPrint(data)) {
+                    function.onCallBack("success.");
+                    return;
+                }
+
                 function.onCallBack("failed.");
             }
         });
@@ -935,7 +946,13 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "closeBluetooth: start" + data);
                 if (bpp == null) return;
+                if (bpp == null) {
+                    function.onCallBack("close but bpp is null.");
+                    return;
+                }
                 bpp.BTClose();
+                bpp = null;
+                function.onCallBack("bt close success.");
             }
         });
 
