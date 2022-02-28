@@ -40,16 +40,23 @@ public class Sender {
                 Thread.sleep(100);
                 String msg = sendQ.take();
                 if (!(msg.length() > 0)) continue;
+                msg = msg.replace("escode:", "");
                 OutputStream out = socket.getOutputStream();
                 PrintWriter op = new PrintWriter(out);
-                if (isHexadecimal(msg)){
+//                if (isHexadecimal(msg)){
+                try {
                     byte[] value = hexStringToByteArray(msg);
                     out.write(value);
                     out.flush();
-                } else {
+                } catch (Exception e) {
+                }
+                try {
                     op.println(msg);
                     op.flush();
+                } catch (Exception e) {
                 }
+//                } else {
+//                }
 //                op.println(msg);
 //                op.flush();
 
