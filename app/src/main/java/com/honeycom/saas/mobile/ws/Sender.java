@@ -44,8 +44,8 @@ public class Sender {
                 PrintWriter op = new PrintWriter(out);
                 if (isHexadecimal(msg)){
                     byte[] value = hexStringToByteArray(msg);
-                    op.println(value);
-                    op.flush();
+                    out.write(value);
+                    out.flush();
                 } else {
                     op.println(msg);
                     op.flush();
