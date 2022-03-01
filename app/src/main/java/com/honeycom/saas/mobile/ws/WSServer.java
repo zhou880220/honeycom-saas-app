@@ -6,15 +6,37 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateFactory;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collections;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import javax.security.cert.CertificateException;
+import javax.security.cert.X509Certificate;
 
 
 /**
@@ -94,6 +116,8 @@ public class WSServer extends WebSocketServer {
 //        }
         try {
             WSServer s = new WSServer(port, mq, sendQ);
+//            SSLContext sslContext = getSSL();
+//            s.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
             s.start();
             System.out.println("ChatServer started on port: " + s.getPort());
 
@@ -122,5 +146,43 @@ public class WSServer extends WebSocketServer {
 //            Thread.currentThread().interrupt();
 //        }
     }
-
+//    /**
+//     * Method which returns a SSLContext from a keystore or IllegalArgumentException on error
+//     *
+//     * @return a valid SSLContext
+//     * @throws IllegalArgumentException when some exception occurred
+//     */
+//    private SSLContext getSSLContextFromKeystore() {
+//        // load up the key store
+//        String storeType = "JKS";
+//        String keystore = "server.keystore";
+//        String storePassword = "123456";
+//        String keyPassword = "123456";
+//
+//        KeyStore ks;
+//        SSLContext sslContext;
+//        try {
+//            // alias key0
+//            InputStream()
+//            ks = KeyStore.getInstance(storeType);
+//            Path file = Paths.get("honeycomb-saas.jks", keystore);
+//            ks.load(Files.newInputStream(file), storePassword.toCharArray());
+//            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+//            kmf.init(ks, keyPassword.toCharArray());
+//            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+//            tmf.init(ks);
+//
+//
+//            sslContext = SSLContext.getInstance("TLS");
+//            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+//        } catch (KeyStoreException | IOException
+//                | NoSuchAlgorithmException | KeyManagementException
+//                | UnrecoverableKeyException | java.security.cert.CertificateException e) {
+//            throw new IllegalArgumentException();
+//        }
+//        return sslContext;
+//    }
+//    private static SSLContext getSSL(){
+//
+//    }
 }
