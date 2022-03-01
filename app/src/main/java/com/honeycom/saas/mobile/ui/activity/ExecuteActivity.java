@@ -125,7 +125,7 @@ public class ExecuteActivity extends BaseActivity {
     private static final int REQUEST_PICK = 101;
     private static final String[] APPLY_PERMISSIONS_APPLICATION = { //第三方应用授权
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
+//            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int ADDRESS_PERMISSIONS_CODE = 1;
@@ -845,7 +845,7 @@ public class ExecuteActivity extends BaseActivity {
 //                        mApplyBackImage1.setVisibility(View.GONE);
                     } else {
 //                        mApplyBackImage1.setVisibility(View.VISIBLE);
-                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
                                 != PackageManager.PERMISSION_GRANTED) {
                             //申请READ_EXTERNAL_STORAGE权限
                             Log.e(TAG, "onCityClick: no permission" );
@@ -854,7 +854,7 @@ public class ExecuteActivity extends BaseActivity {
                         }
                     }
                 } catch (Exception e) {
-                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
                             != PackageManager.PERMISSION_GRANTED) {
                         //申请READ_EXTERNAL_STORAGE权限
                         ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
@@ -909,19 +909,19 @@ public class ExecuteActivity extends BaseActivity {
             // For Android >= 5.0 打开系统文件管理系统
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
-
+                Log.e(TAG, "start onShowFileChooser");
                 if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) {
                     //申请READ_EXTERNAL_STORAGE权限
                     Log.e(TAG, "onCityClick: no permission camera" );
                     ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
                             ADDRESS_PERMISSIONS_CODE);
-                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    //申请READ_EXTERNAL_STORAGE权限
-                    Log.e(TAG, "onCityClick: no permission record" );
-                    ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                            ADDRESS_PERMISSIONS_CODE);
+//                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                        != PackageManager.PERMISSION_GRANTED) {
+//                    //申请READ_EXTERNAL_STORAGE权限
+//                    Log.e(TAG, "onCityClick: no permission record" );
+//                    ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                            ADDRESS_PERMISSIONS_CODE);
                 }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
                     //申请READ_EXTERNAL_STORAGE权限
@@ -929,8 +929,11 @@ public class ExecuteActivity extends BaseActivity {
                     ActivityCompat.requestPermissions(ExecuteActivity.this, APPLY_PERMISSIONS_APPLICATION,
                             ADDRESS_PERMISSIONS_CODE);
                 }else {
-                    Log.e(TAG, "onCityClick: have permission" );
                     String[] acceptTypes = fileChooserParams.getAcceptTypes();
+                    Log.e(TAG, "onCityClick: have permission"+acceptTypes );
+                    for (String s : acceptTypes) {
+                        Log.e(TAG, "acceptTypes: "+s );
+                    }
                     boolean isphoto = fileChooserParams.isCaptureEnabled();
                     int i = fileChooserParams.getMode();
                     Log.i(TAG, "onShowFileChooser: "+isphoto + "  i="+i);
@@ -947,6 +950,8 @@ public class ExecuteActivity extends BaseActivity {
                         openImageChooserActivity();//打开系统拍照及相册选取
                     } else if (acceptTypes[0].equals("video/*")) {
                         openVideoChooserActivity();//打开系统拍摄/选取视频
+                    }else {
+                        openFileChooserActivity(); //文件系统管理
                     }
                 }
                 return true;
@@ -1304,10 +1309,22 @@ public class ExecuteActivity extends BaseActivity {
      * 跳转到系统文件选择
      */
     public void openFileChooserActivity() {
-        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setType("*/*");//文件上传
-        startActivityForResult(i, FILE_CHOOSER_RESULT_CODE);
+//        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+//        i.addCategory(Intent.CATEGORY_OPENABLE);
+//        i.setType("*/*");//文件上传
+//        startActivityForResult(i, FILE_CHOOSER_RESULT_CODE);
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        try {
+            startActivityForResult( Intent.createChooser(intent, "文件选择"), FILE_CHOOSER_RESULT_CODE);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.",  Toast.LENGTH_SHORT).show();
+        }
+
+
     }
 
     /**

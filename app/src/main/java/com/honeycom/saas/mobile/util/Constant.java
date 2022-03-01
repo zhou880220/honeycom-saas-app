@@ -8,6 +8,7 @@ import java.io.File;
 
 //常量类
 public class Constant {
+
     /**
      * 测试环境前缀
      * 页面前缀 ：http://mestestwebk8s.zhizaoyun.com:31810/
@@ -26,13 +27,6 @@ public class Constant {
 //    public static final String INTERFACE_URL =  "https://indapp-api.zhizaoyun.com";
 //    public static final String LOCAL_PAGE_URL = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app"; //FileUtils.getCachePath()+ File.separator + "h5_cache";
       public static final String LOCAL_PAGE_URL = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
-    /**
-     * 调试环境前缀
-     * 页面前缀 ：https://mobileclientthird.zhizaoyun.com/
-     * 接口前缀 ：https://mobileclientthird.zhizaoyun.com/gateway/
-     */
-    public static final String DEMONSTRAION_PAGE_URL = "https://mobileclientthird.zhizaoyun.com/";
-    public static final String DEMONSTRAION_INTERFACE_URL = "https://mobileclientthird.zhizaoyun.com/gateway/";
 
 
 
