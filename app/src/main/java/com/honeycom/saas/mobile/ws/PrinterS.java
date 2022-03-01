@@ -18,8 +18,10 @@ public class PrinterS {
             // send data to printer
 //            String strTest = getStringFromFile("assets://label.zpl.txt");
 //            outToServer.writeBytes(strTest);
-            outToServer.writeBytes(zplStr);
-
+//            outToServer.writeBytes(zplStr);
+            byte[] bs = zplStr.getBytes("gb18030");
+//            outToServer.write(zplStr);
+            outToServer.write(bs);
             // close data stream and socket
             outToServer.close();
             clientSocket.close();
