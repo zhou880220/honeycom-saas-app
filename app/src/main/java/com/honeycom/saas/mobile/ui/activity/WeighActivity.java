@@ -913,7 +913,10 @@ public class WeighActivity extends BaseActivity {
                 Log.e(TAG, "createBluetooth: "+data);
                 try {
                     if (bpp == null) bpp = new BoardPostsPrinter();
-                    if (bpp.initBT(data)) function.onCallBack("success.");
+                    if (bpp.initBT(data)) {
+                        function.onCallBack("init success.");
+                        return;
+                    }
                     function.onCallBack("failed.");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -927,8 +930,14 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printByBluetooth: start"+data);
                 try {
-                    if (bpp == null) return;
-                    if(bpp.BTPrint(data)) function.onCallBack("success.");
+                    if (bpp == null) {
+                        function.onCallBack("print bpp is null.");
+                        return;
+                    }
+                    if(bpp.BTPrint(data)) {
+                        function.onCallBack("success.");
+                        return;
+                    }
                     function.onCallBack("failed.");
                 } catch (Exception e) {
                     NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
