@@ -48,6 +48,7 @@ public class WSServer extends WebSocketServer {
 
     MessageQueue mq;
     MessageQueue sendQ;
+    public static String currentMsg = "";
 
     public WSServer(int port, MessageQueue mq, MessageQueue sendQ) throws UnknownHostException {
         super(new InetSocketAddress(port));
@@ -129,7 +130,10 @@ public class WSServer extends WebSocketServer {
 //                Thread.sleep(500);
                 String taskStr = mq.take();
 //                Log.d(WebViewActivity.WVTaskName, taskStr);
-                if (taskStr.length() > 0) s.broadcast(taskStr);
+                if (taskStr.length() > 0)  {
+                    s.broadcast(taskStr);
+                    currentMsg = taskStr;
+                }
                 Thread.sleep(50);
 //                if (bqInterrupt) {
 //                    Thread.currentThread().interrupt();

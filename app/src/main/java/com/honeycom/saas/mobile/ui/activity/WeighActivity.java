@@ -863,6 +863,10 @@ public class WeighActivity extends BaseActivity {
             }
         });
 
+        mNewWeb.registerHandler("getCurrESData", (data, function) -> {
+            function.onCallBack(WSServer.currentMsg);
+        });
+
         mNewWeb.registerHandler("switchNetwork", new BridgeHandler() {
             @Override
             synchronized public void handler(String data, CallBackFunction function) {
