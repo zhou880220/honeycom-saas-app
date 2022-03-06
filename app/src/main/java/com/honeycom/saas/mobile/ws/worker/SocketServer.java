@@ -1,4 +1,6 @@
-package com.honeycom.saas.mobile.ws;
+package com.honeycom.saas.mobile.ws.worker;
+
+import com.honeycom.saas.mobile.ws.MessageQueue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,7 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import static com.honeycom.saas.mobile.ws.BoardPosts.bqInterrupt;
+import static com.honeycom.saas.mobile.ws.BoardPostsESSocket.bqInterrupt;
 
 //import static tech.beeio.v2ws_client.ws.BoardPosts.bqInterrupt;
 

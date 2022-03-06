@@ -2,7 +2,7 @@ package com.honeycom.saas.mobile.ws;
 
 import java.io.IOException;
 
-public class BoardPostsPrinter {
+public class BoardPostsBlueTooth {
     // ---------------------------------------------------------------------------------------------
 
     public BluetoothServer bts = null;

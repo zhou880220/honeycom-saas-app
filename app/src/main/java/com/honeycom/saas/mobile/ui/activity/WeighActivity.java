@@ -30,7 +30,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -54,29 +53,23 @@ import com.github.lzyzsd.jsbridge.BridgeHandler;
 import com.github.lzyzsd.jsbridge.BridgeWebView;
 import com.github.lzyzsd.jsbridge.CallBackFunction;
 import com.google.gson.Gson;
-import com.honeycom.saas.mobile.App;
 import com.honeycom.saas.mobile.BuildConfig;
 import com.honeycom.saas.mobile.R;
 import com.honeycom.saas.mobile.base.BaseActivity;
 import com.honeycom.saas.mobile.http.bean.BrowserBean;
 import com.honeycom.saas.mobile.util.BaseUtils;
 import com.honeycom.saas.mobile.util.Constant;
-import com.honeycom.saas.mobile.util.NewToastUtil;
 import com.honeycom.saas.mobile.util.SPUtils;
 import com.honeycom.saas.mobile.util.StatusBarCompat;
 import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
-import com.honeycom.saas.mobile.ws.BluetoothServer;
-import com.honeycom.saas.mobile.ws.BoardPosts;
-import com.honeycom.saas.mobile.ws.BoardPostsPrinter;
-import com.honeycom.saas.mobile.ws.MessageQueue;
-import com.honeycom.saas.mobile.ws.PrintBean;
+import com.honeycom.saas.mobile.ws.BoardPostsESSocket;
+import com.honeycom.saas.mobile.ws.BoardPostsBlueTooth;
+import com.honeycom.saas.mobile.ws.bean.PrintBean;
 import com.honeycom.saas.mobile.ws.PrinterS;
-import com.honeycom.saas.mobile.ws.Sender;
-import com.honeycom.saas.mobile.ws.SocketServer;
 import com.honeycom.saas.mobile.ws.WSServer;
-import com.honeycom.saas.mobile.ws.WeighBean;
+import com.honeycom.saas.mobile.ws.bean.WeighBean;
 import com.yzq.zxinglibrary.android.CaptureActivity;
 import com.yzq.zxinglibrary.bean.ZxingConfig;
 
@@ -93,10 +86,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import butterknife.BindView;
-import es.dmoral.toasty.Toasty;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -180,8 +171,8 @@ public class WeighActivity extends BaseActivity {
 //    public BluetoothServer bts = null;
 
 
-    BoardPosts bp = null;
-    BoardPostsPrinter bpp = null;
+    BoardPostsESSocket bp = null;
+    BoardPostsBlueTooth bpp = null;
 
     //Handler
     private Handler handler = new Handler(new Handler.Callback()  {
@@ -874,10 +865,23 @@ public class WeighActivity extends BaseActivity {
                 try {
                     Gson gson = new Gson();
                     WeighBean weighBean =  gson.fromJson(data, WeighBean.class);
-                    if (bp == null) bp = new BoardPosts("6001");
+                    if (bp == null) bp = new BoardPostsESSocket("6001");
                     if (bp != null) {
                         bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
                     }
+                    function.onCallBack("done");
+                } catch (Exception e) {
+                    Log.e(TAG, "switchNetwork: error: "+e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+        mNewWeb.registerHandler("sendMsgToES", new BridgeHandler() {
+            @Override
+            synchronized public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "switchNetwork: start: "+data);
+                try {
+
                     function.onCallBack("done");
                 } catch (Exception e) {
                     Log.e(TAG, "switchNetwork: error: "+e.getMessage());
@@ -916,7 +920,7 @@ public class WeighActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
-                if (bpp == null) bpp = new BoardPostsPrinter();
+                if (bpp == null) bpp = new BoardPostsBlueTooth();
                 if (bpp.initBT(data)) {
                     function.onCallBack("init success.");
                     return;
