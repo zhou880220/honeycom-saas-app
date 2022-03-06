@@ -1,9 +1,10 @@
 package com.honeycom.saas.mobile.ws;
 
+import com.honeycom.saas.mobile.ws.server.WSServer;
 import com.honeycom.saas.mobile.ws.worker.HTMLMsgAcceptee;
 import com.honeycom.saas.mobile.ws.worker.SocketServer;
 
-public class BoardPostsESSocket {
+public class DoorOfESSocket {
     public Thread listerT = null;
     public Thread senderT = null;
     public Thread wsT = null;
@@ -13,7 +14,7 @@ public class BoardPostsESSocket {
     public static boolean bqInterrupt = false;
 
 
-    public BoardPostsESSocket(String selfServePort) {
+    public DoorOfESSocket(String selfServePort) {
         if (wsT == null) {
             wsT = new Thread(() -> {
                 WSServer.startWSServer(queueOfInstruct, queueOfES, Integer.parseInt(selfServePort));
@@ -50,12 +51,15 @@ public class BoardPostsESSocket {
         // sender for clean or something
         if (senderT == null) {
             senderT = new Thread(() -> {
-                new HTMLMsgAcceptee(queueOfInstruct, queueOfES).launching(ip, Integer.parseInt(port));
+                 new HTMLMsgAcceptee(queueOfInstruct, queueOfES).launching(ip, Integer.parseInt(port));
             });
             senderT.start();
         }
     }
 
+    public static void pushMsgByCurrConn(String message){
+        queueOfES.put(message);
+    }
 
     private void cleanNetwork() throws InterruptedException {
         bqInterrupt = true;
@@ -70,13 +74,4 @@ public class BoardPostsESSocket {
         }
     }
 }
-
-
-
-
-
-
-
-
-
 

@@ -3,7 +3,7 @@ package com.honeycom.saas.mobile.ws;
 import java.io.DataOutputStream;
 import java.net.Socket;
 
-public class PrinterS {
+public class DoorOfPrinterBySocket {
 
 
     public void run(String ip, String port, String zplStr) throws Exception {

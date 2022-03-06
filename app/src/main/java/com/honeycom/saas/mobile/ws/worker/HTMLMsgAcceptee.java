@@ -11,13 +11,13 @@ import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.honeycom.saas.mobile.ws.BoardPostsESSocket.bqInterrupt;
+import static com.honeycom.saas.mobile.ws.DoorOfESSocket.bqInterrupt;
 
 //import tech.beeio.v2ws_client.WebViewActivity;
 
 //import static tech.beeio.v2ws_client.ws.BoardPosts.bqInterrupt;
 
-public class HTMLMsgAcceptee {
+public class HTMLMsgAcceptee implements WorkerInterface{
     // ---------------------------------------------------------------------------------------------
     MessageQueue mq;
     MessageQueue sendQ;

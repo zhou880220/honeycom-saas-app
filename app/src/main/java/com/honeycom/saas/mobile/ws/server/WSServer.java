@@ -1,4 +1,6 @@
-package com.honeycom.saas.mobile.ws;
+package com.honeycom.saas.mobile.ws.server;
+
+import com.honeycom.saas.mobile.ws.MessageQueue;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -60,6 +62,8 @@ public class WSServer extends WebSocketServer {
     }
 
 
+
+
     @Override
     public void onMessage(WebSocket conn, ByteBuffer message) {
         broadcast(message.array());
@@ -95,7 +99,7 @@ public class WSServer extends WebSocketServer {
                 String taskStr = queueOfInstruct.take();
                 if (taskStr.length() > 0) {
                     s.broadcast(taskStr);
-                    currentMsg = taskStr;
+                    currentMsg = taskStr.trim();
                 }
                 Thread.sleep(50);
             }

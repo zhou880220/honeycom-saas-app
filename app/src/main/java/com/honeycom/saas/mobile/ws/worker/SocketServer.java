@@ -8,11 +8,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import static com.honeycom.saas.mobile.ws.BoardPostsESSocket.bqInterrupt;
+import static com.honeycom.saas.mobile.ws.DoorOfESSocket.bqInterrupt;
 
 //import static tech.beeio.v2ws_client.ws.BoardPosts.bqInterrupt;
 
-public class SocketServer {
+public class SocketServer implements WorkerInterface {
     // public class SS implements Runnable {
     // ---------------------------------------------------------------------------------------------
     MessageQueue mq;

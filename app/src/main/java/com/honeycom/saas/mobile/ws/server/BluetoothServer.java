@@ -1,4 +1,4 @@
-package com.honeycom.saas.mobile.ws;
+package com.honeycom.saas.mobile.ws.server;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

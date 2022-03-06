@@ -1,8 +1,10 @@
 package com.honeycom.saas.mobile.ws;
 
+import com.honeycom.saas.mobile.ws.server.BluetoothServer;
+
 import java.io.IOException;
 
-public class BoardPostsBlueTooth {
+public class DoorOfBlueTooth {
     // ---------------------------------------------------------------------------------------------
 
     public BluetoothServer bts = null;
@@ -55,7 +57,7 @@ public class BoardPostsBlueTooth {
 //            Toasty.info(getApplicationContext(), jsonString, Toast.LENGTH_SHORT, true).show();
 //        String test = String.valueOf((int) (Math.random() * 50 + 1));
         new Thread(() -> {
-            PrinterS s = new PrinterS();
+            DoorOfPrinterBySocket s = new DoorOfPrinterBySocket();
             try {
                 s.run(ip, port, zplString);
             } catch (Exception e) {

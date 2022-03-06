@@ -64,11 +64,11 @@ import com.honeycom.saas.mobile.util.StatusBarCompat;
 import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
-import com.honeycom.saas.mobile.ws.BoardPostsESSocket;
-import com.honeycom.saas.mobile.ws.BoardPostsBlueTooth;
+import com.honeycom.saas.mobile.ws.DoorOfESSocket;
+import com.honeycom.saas.mobile.ws.DoorOfBlueTooth;
 import com.honeycom.saas.mobile.ws.bean.PrintBean;
-import com.honeycom.saas.mobile.ws.PrinterS;
-import com.honeycom.saas.mobile.ws.WSServer;
+import com.honeycom.saas.mobile.ws.DoorOfPrinterBySocket;
+import com.honeycom.saas.mobile.ws.server.WSServer;
 import com.honeycom.saas.mobile.ws.bean.WeighBean;
 import com.yzq.zxinglibrary.android.CaptureActivity;
 import com.yzq.zxinglibrary.bean.ZxingConfig;
@@ -171,8 +171,8 @@ public class WeighActivity extends BaseActivity {
 //    public BluetoothServer bts = null;
 
 
-    BoardPostsESSocket bp = null;
-    BoardPostsBlueTooth bpp = null;
+    DoorOfESSocket bp = null;
+    DoorOfBlueTooth bpp = null;
 
     //Handler
     private Handler handler = new Handler(new Handler.Callback()  {
@@ -865,7 +865,7 @@ public class WeighActivity extends BaseActivity {
                 try {
                     Gson gson = new Gson();
                     WeighBean weighBean =  gson.fromJson(data, WeighBean.class);
-                    if (bp == null) bp = new BoardPostsESSocket("6001");
+                    if (bp == null) bp = new DoorOfESSocket("6001");
                     if (bp != null) {
                         bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
                     }
@@ -876,12 +876,12 @@ public class WeighActivity extends BaseActivity {
                 }
             }
         });
-        mNewWeb.registerHandler("sendMsgToES", new BridgeHandler() {
+        mNewWeb.registerHandler("sendInstructToES", new BridgeHandler() {
             @Override
             synchronized public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "switchNetwork: start: "+data);
+                Log.e(TAG, "push instruct by jsbridge "+data);
                 try {
-
+                    DoorOfESSocket.pushMsgByCurrConn(data);
                     function.onCallBack("done");
                 } catch (Exception e) {
                     Log.e(TAG, "switchNetwork: error: "+e.getMessage());
@@ -901,7 +901,7 @@ public class WeighActivity extends BaseActivity {
                     PrintBean printBean =  gson.fromJson(data, PrintBean.class);
                     String test = String.valueOf((int) (Math.random() * 50 + 1));
                     new Thread(() -> {
-                        PrinterS s = new PrinterS();
+                        DoorOfPrinterBySocket s = new DoorOfPrinterBySocket();
                         try {
                             s.run(printBean.getIp(), printBean.getPort(), printBean.getZplString());
                         } catch (Exception e) {
@@ -920,7 +920,7 @@ public class WeighActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
-                if (bpp == null) bpp = new BoardPostsBlueTooth();
+                if (bpp == null) bpp = new DoorOfBlueTooth();
                 if (bpp.initBT(data)) {
                     function.onCallBack("init success.");
                     return;
