@@ -855,7 +855,11 @@ public class WeighActivity extends BaseActivity {
         });
 
         mNewWeb.registerHandler("getCurrESData", (data, function) -> {
-            function.onCallBack(WSServer.currentMsg);
+            try {
+                function.onCallBack(WSServer.currentMsg);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         mNewWeb.registerHandler("switchNetwork", new BridgeHandler() {
@@ -896,7 +900,6 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printDirect: "+data);
                 try {
-
                     Gson gson = new Gson();
                     PrintBean printBean =  gson.fromJson(data, PrintBean.class);
                     String test = String.valueOf((int) (Math.random() * 50 + 1));
@@ -919,14 +922,17 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("createBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "createBluetooth: "+data);
-                if (bpp == null) bpp = new DoorOfBlueTooth();
-                if (bpp.initBT(data)) {
-                    function.onCallBack("init success.");
-                    return;
+                try {
+                    Log.e(TAG, "createBluetooth: "+data);
+                    if (bpp == null) bpp = new DoorOfBlueTooth();
+                    if (bpp.initBT(data)) {
+                        function.onCallBack("init success.");
+                        return;
+                    }
+                    function.onCallBack("failed.");
+                } catch (Exception e){
+                    function.onCallBack("failed.");
                 }
-
-                function.onCallBack("failed.");
             }
         });
 
@@ -934,17 +940,20 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("printByBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "printByBluetooth: start"+data);
-                if (bpp == null) {
-                    function.onCallBack("print bpp is null.");
-                    return;
+                try {
+                    Log.e(TAG, "printByBluetooth: start" + data);
+                    if (bpp == null) {
+                        function.onCallBack("print bpp is null.");
+                        return;
+                    }
+                    if (bpp.BTPrint(data)) {
+                        function.onCallBack("success.");
+                        return;
+                    }
+                    function.onCallBack("failed.");
+                } catch (Exception e){
+                    function.onCallBack("failed.");
                 }
-                if(bpp.BTPrint(data)) {
-                    function.onCallBack("success.");
-                    return;
-                }
-
-                function.onCallBack("failed.");
             }
         });
 
@@ -952,15 +961,19 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("closeBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "closeBluetooth: start" + data);
-                if (bpp == null) return;
-                if (bpp == null) {
-                    function.onCallBack("close but bpp is null.");
-                    return;
+                try {
+                    Log.e(TAG, "closeBluetooth: start" + data);
+                    if (bpp == null) return;
+                    if (bpp == null) {
+                        function.onCallBack("close but bpp is null.");
+                        return;
+                    }
+                    bpp.BTClose();
+                    bpp = null;
+                    function.onCallBack("bt close success.");
+                } catch (Exception e){
+                    function.onCallBack("failed.");
                 }
-                bpp.BTClose();
-                bpp = null;
-                function.onCallBack("bt close success.");
             }
         });
 
