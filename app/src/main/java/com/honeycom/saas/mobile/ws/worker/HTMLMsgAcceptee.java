@@ -1,4 +1,6 @@
-package com.honeycom.saas.mobile.ws;
+package com.honeycom.saas.mobile.ws.worker;
+
+import com.honeycom.saas.mobile.ws.MessageQueue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,18 +11,18 @@ import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.honeycom.saas.mobile.ws.BoardPosts.bqInterrupt;
+import static com.honeycom.saas.mobile.ws.DoorOfESSocket.bqInterrupt;
 
 //import tech.beeio.v2ws_client.WebViewActivity;
 
 //import static tech.beeio.v2ws_client.ws.BoardPosts.bqInterrupt;
 
-public class Sender {
+public class HTMLMsgAcceptee implements WorkerInterface{
     // ---------------------------------------------------------------------------------------------
     MessageQueue mq;
     MessageQueue sendQ;
 
-    public Sender(MessageQueue mq, MessageQueue sendQ) {
+    public HTMLMsgAcceptee(MessageQueue mq, MessageQueue sendQ) {
         this.mq = mq;
         this.sendQ = sendQ;
     }

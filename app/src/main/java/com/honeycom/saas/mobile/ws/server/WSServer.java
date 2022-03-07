@@ -1,4 +1,6 @@
-package com.honeycom.saas.mobile.ws;
+package com.honeycom.saas.mobile.ws.server;
+
+import com.honeycom.saas.mobile.ws.MessageQueue;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -22,13 +24,14 @@ public class WSServer extends WebSocketServer {
 
     public static volatile StringBuffer shareBuf = new StringBuffer();
 
-    MessageQueue mq;
-    MessageQueue sendQ;
+    MessageQueue queueOfInstruct;
+    MessageQueue queueOfES;
+    public static String currentMsg = "";
 
-    public WSServer(int port, MessageQueue mq, MessageQueue sendQ) throws UnknownHostException {
+    public WSServer(int port, MessageQueue mq, MessageQueue queueOfES) throws UnknownHostException {
         super(new InetSocketAddress(port));
-        this.mq = mq;
-        this.sendQ = sendQ;
+        this.queueOfInstruct = mq;
+        this.queueOfES = queueOfES;
     }
 
     public WSServer(InetSocketAddress address) {
@@ -58,7 +61,7 @@ public class WSServer extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         broadcast(message);
         System.out.println("ws-s: " + conn + ": " + message);
-        sendQ.put(message);
+        queueOfES.put(message);
     }
 
     @Override
@@ -103,7 +106,10 @@ public class WSServer extends WebSocketServer {
 //                Thread.sleep(500);
                 String taskStr = mq.take();
 //                Log.d(WebViewActivity.WVTaskName, taskStr);
-                if (taskStr.length() > 0) s.broadcast(taskStr);
+                if (taskStr.length() > 0)  {
+                    s.broadcast(taskStr);
+                    currentMsg = taskStr;
+                }
                 Thread.sleep(50);
 //                if (bqInterrupt) {
 //                    Thread.currentThread().interrupt();

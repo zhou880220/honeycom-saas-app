@@ -1,31 +1,31 @@
 package com.honeycom.saas.mobile.ws;
 
-public class BoardPosts {
+import com.honeycom.saas.mobile.ws.server.WSServer;
+import com.honeycom.saas.mobile.ws.worker.HTMLMsgAcceptee;
+import com.honeycom.saas.mobile.ws.worker.SocketServer;
+
+public class DoorOfESSocket {
     public Thread listerT = null;
     public Thread senderT = null;
     public Thread wsT = null;
 
-    MessageQueue mq = new MessageQueue();
-    MessageQueue sq = new MessageQueue();
-//    MessageQueue messageQueue = new MessageQueue();
-//    MessageQueue sendQueue = new MessageQueue();
+    static MessageQueue queueOfInstruct = new MessageQueue();
+    static MessageQueue queueOfES = new MessageQueue();
     public static boolean bqInterrupt = false;
 
 
-//    public BoardPosts(MessageQueue mq, MessageQueue sq, String selfServePort) {
-    public BoardPosts(String selfServePort) {
-        this.mq = mq;
-        this.sq = sq;
-
-        // WS server
+    public DoorOfESSocket(String selfServePort) {
         if (wsT == null) {
             wsT = new Thread(() -> {
-                WSServer.startWSServer(mq, sq, Integer.parseInt(selfServePort));
+                WSServer.startWSServer(queueOfInstruct, queueOfES, Integer.parseInt(selfServePort));
             });
             wsT.start();
         }
     }
 
+    public static void putInstructMsg(String msg) {
+        queueOfInstruct.put(msg);
+    }
 
     public void switchNetwork(String ip, String port) {
         try {
@@ -44,19 +44,22 @@ public class BoardPosts {
         // listen
         if (listerT == null) {
             listerT = new Thread(() -> {
-                new SocketServer(mq, sq).launching(ip, Integer.parseInt(port));
+                new SocketServer(queueOfInstruct, queueOfES).launching(ip, Integer.parseInt(port));
             });
             listerT.start();
         }
         // sender for clean or something
         if (senderT == null) {
             senderT = new Thread(() -> {
-                new Sender(mq, sq).launching(ip, Integer.parseInt(port));
+                 new HTMLMsgAcceptee(queueOfInstruct, queueOfES).launching(ip, Integer.parseInt(port));
             });
             senderT.start();
         }
     }
 
+    public static void pushMsgByCurrConn(String message){
+        queueOfES.put(message);
+    }
 
     private void cleanNetwork() throws InterruptedException {
         bqInterrupt = true;
@@ -71,13 +74,4 @@ public class BoardPosts {
         }
     }
 }
-
-
-
-
-
-
-
-
-
 

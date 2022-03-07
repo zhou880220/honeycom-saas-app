@@ -30,7 +30,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -54,7 +53,6 @@ import com.github.lzyzsd.jsbridge.BridgeHandler;
 import com.github.lzyzsd.jsbridge.BridgeWebView;
 import com.github.lzyzsd.jsbridge.CallBackFunction;
 import com.google.gson.Gson;
-import com.honeycom.saas.mobile.App;
 import com.honeycom.saas.mobile.BuildConfig;
 import com.honeycom.saas.mobile.R;
 import com.honeycom.saas.mobile.base.BaseActivity;
@@ -67,16 +65,12 @@ import com.honeycom.saas.mobile.util.StatusBarCompat;
 import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
-import com.honeycom.saas.mobile.ws.BluetoothServer;
-import com.honeycom.saas.mobile.ws.BoardPosts;
-import com.honeycom.saas.mobile.ws.BoardPostsPrinter;
-import com.honeycom.saas.mobile.ws.MessageQueue;
-import com.honeycom.saas.mobile.ws.PrintBean;
-import com.honeycom.saas.mobile.ws.PrinterS;
-import com.honeycom.saas.mobile.ws.Sender;
-import com.honeycom.saas.mobile.ws.SocketServer;
-import com.honeycom.saas.mobile.ws.WSServer;
-import com.honeycom.saas.mobile.ws.WeighBean;
+import com.honeycom.saas.mobile.ws.DoorOfBlueTooth;
+import com.honeycom.saas.mobile.ws.DoorOfESSocket;
+import com.honeycom.saas.mobile.ws.DoorOfPrinterBySocket;
+import com.honeycom.saas.mobile.ws.bean.PrintBean;
+import com.honeycom.saas.mobile.ws.server.WSServer;
+import com.honeycom.saas.mobile.ws.bean.WeighBean;
 import com.yzq.zxinglibrary.android.CaptureActivity;
 import com.yzq.zxinglibrary.bean.ZxingConfig;
 
@@ -93,10 +87,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import butterknife.BindView;
-import es.dmoral.toasty.Toasty;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -179,8 +171,8 @@ public class WeighActivity extends BaseActivity {
 //    public Thread wsT = null;
 //    public BluetoothServer bts = null;
 
-    BoardPosts bp = null;
-    BoardPostsPrinter bpp = null;
+    DoorOfESSocket bp = null;
+    DoorOfBlueTooth bpp = null;
 
     //Handler
     private Handler handler = new Handler(new Handler.Callback()  {
@@ -861,14 +853,22 @@ public class WeighActivity extends BaseActivity {
             }
         });
 
+        mNewWeb.registerHandler("getCurrESData", (data, function) -> {
+            try {
+                function.onCallBack(WSServer.currentMsg);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         mNewWeb.registerHandler("switchNetwork", new BridgeHandler() {
             @Override
-            public void handler(String data, CallBackFunction function) {
+            synchronized public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "switchNetwork: start: "+data);
                 try {
                     Gson gson = new Gson();
                     WeighBean weighBean =  gson.fromJson(data, WeighBean.class);
-                    if (bp == null) bp = new BoardPosts("6001");
+                    if (bp == null) bp = new DoorOfESSocket("6001");
                     if (bp != null) {
                         bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
 //                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
@@ -892,7 +892,7 @@ public class WeighActivity extends BaseActivity {
                     PrintBean printBean =  gson.fromJson(data, PrintBean.class);
                     String test = String.valueOf((int) (Math.random() * 50 + 1));
                     new Thread(() -> {
-                        PrinterS s = new PrinterS();
+                        DoorOfPrinterBySocket s = new DoorOfPrinterBySocket();
                         try {
                             s.run(printBean.getIp(), printBean.getPort(), printBean.getZplString());
                         } catch (Exception e) {
@@ -912,7 +912,7 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "createBluetooth: "+data);
                 try {
-                    if (bpp == null) bpp = new BoardPostsPrinter();
+                    if (bpp == null) bpp = new DoorOfBlueTooth();
                     if (bpp.initBT(data)) {
                         function.onCallBack("init success.");
                         return;
@@ -953,7 +953,13 @@ public class WeighActivity extends BaseActivity {
                 Log.e(TAG, "closeBluetooth: start"+data);
                 try {
                     if (bpp == null) return;
+                    if (bpp == null) {
+                        function.onCallBack("close but bpp is null.");
+                        return;
+                    }
                     bpp.BTClose();
+                    bpp = null;
+                    function.onCallBack("bt close success.");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -964,141 +970,6 @@ public class WeighActivity extends BaseActivity {
 
     }
 
-
-
-    class MJavaScriptInterface {
-        private Context context;
-
-        public MJavaScriptInterface(Context context) {
-            this.context = context;
-        }
-
-
-        @JavascriptInterface
-        public String getIP(String jsonString) {
-            Log.e(TAG, "getIP: start" + jsonString);
-            return wifiIpAddress();
-        }
-
-        @JavascriptInterface
-        public String switchNetwork(String ip, String port, String selfServePort) {
-            Log.e(TAG, "switchNetwork: start" + ip);
-
-            return "done";
-        }
-
-        @JavascriptInterface
-        public String closeNetwork(String msg) {
-            Log.e(TAG, "closeNetwork: ");
-            NewToastUtil.showShortToast(getApplicationContext(), "close");
-            return "done";
-        }
-
-        // -----------------------------------------------------------------------------------------
-        // -----------------------------------------------------------------------------------------
-        @JavascriptInterface
-        public String printDirect(String ip, String port, String zplString) {
-            Log.e(TAG, "printDirect: ");
-            String test = String.valueOf((int) (Math.random() * 50 + 1));
-            new Thread(() -> {
-                PrinterS s = new PrinterS();
-                try {
-                    s.run(ip, port, zplString);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
-            return "send done " + test + " ,";
-//            return wifiIpAddress(getApplicationContext());
-        }
-
-        public BluetoothServer bts = null;
-
-        @JavascriptInterface
-        public String createBluetooth(String msg, String addr) {
-            Log.e(TAG, "createBluetooth: ");
-            if (this.bts == null) {
-                this.bts = new BluetoothServer();
-            }
-            if (this.bts.isDeviceNull()) {
-//                Toasty.info(getApplicationContext(), "bluetooth init success.", Toast.LENGTH_LONG, false).show();
-                try {
-                    synchronized (this) {
-                        this.bts.lockDevice(addr);
-                        this.bts.settleConn();
-                    }
-                } catch (IOException e) {
-//                    Toasty.warning(getApplicationContext(), "init failed", Toast.LENGTH_LONG, false).show();
-                    e.printStackTrace();
-                    return "failed";
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return "failed, " + e.getMessage();
-                }
-            }
-//            Toasty.info(getApplicationContext(), "bluetooth was go already.", Toast.LENGTH_LONG, false).show();
-            if (this.bts != null) {
-                return "done";
-            }
-            return "failed";
-        }
-
-        @JavascriptInterface
-        public String printByBluetooth(String zplStr) {
-            try {
-                Log.e(TAG, "printByBluetooth: ");
-                this.bts.write(zplStr);
-            } catch (IOException e) {
-                NewToastUtil.showShortToast(getApplicationContext(), "io failed.");
-                e.printStackTrace();
-            } catch (Exception e) {
-                NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
-                e.printStackTrace();
-            }
-            return "";
-        }
-
-        @JavascriptInterface
-        public String closeBluetooth(String msg) throws IOException {
-            this.bts.close();
-            this.bts = null;
-            return "";
-        }
-
-
-        //        CountDownLatch latch = new CountDownLatch(1);
-//        String takePhotoValue = null;
-//        private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-//            if (result.getContents() == null) {
-////                Toast.makeText(WebViewActivity.this, "Cancelled", Toast.LENGTH_LONG).show();
-//                latch.countDown();
-//                takePhotoValue = "";
-//            } else {
-////                Toast.makeText(WebViewActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
-//                latch.countDown();
-//                takePhotoValue = result.getContents();
-//            }
-//            // todo return qrcode...
-//        });
-        @JavascriptInterface
-        public String getQRCode(String msg) throws InterruptedException {
-//            barcodeLauncher.launch(new ScanOptions());
-//            latch.await();
-//            return takePhotoValue;
-            Log.e(TAG, "startIntentZing: ");
-            try {
-                ZxingConfig config = new ZxingConfig();
-                config.setShowAlbum(false);
-                Intent intent = new Intent(mContext, CaptureActivity.class);
-                intent.putExtra(com.yzq.zxinglibrary.common.Constant.INTENT_ZXING_CONFIG, config);
-                startActivityForResult(intent, REQUEST_CODE_SCAN);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return "done";
-        }
-
-    }
 
     /**
      * 获取wifi地址

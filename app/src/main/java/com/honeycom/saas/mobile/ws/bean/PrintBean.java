@@ -1,4 +1,4 @@
-package com.honeycom.saas.mobile.ws;
+package com.honeycom.saas.mobile.ws.bean;
 
 /**
  * 打印参数
