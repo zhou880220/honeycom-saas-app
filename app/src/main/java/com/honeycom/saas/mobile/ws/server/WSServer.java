@@ -17,9 +17,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 
-/**
- * A simple WebSocketServer implementation. Keeps track of a "chatroom".
- */
+
 public class WSServer extends WebSocketServer {
 
     public static volatile StringBuffer shareBuf = new StringBuffer();
@@ -28,9 +26,9 @@ public class WSServer extends WebSocketServer {
     MessageQueue queueOfES;
     public static String currentMsg = "";
 
-    public WSServer(int port, MessageQueue mq, MessageQueue queueOfES) throws UnknownHostException {
+    public WSServer(int port, MessageQueue queueOfInstruct, MessageQueue queueOfES) throws UnknownHostException {
         super(new InetSocketAddress(port));
-        this.queueOfInstruct = mq;
+        this.queueOfInstruct = queueOfInstruct;
         this.queueOfES = queueOfES;
     }
 
@@ -88,11 +86,6 @@ public class WSServer extends WebSocketServer {
         setConnectionLostTimeout(100);
     }
     public static void startWSServer(MessageQueue mq, MessageQueue sendQ, int port) {
-//        int port = 8887; // 843 flash policy port
-//        try {
-////            port = Integer.parseInt(args[0]);
-//        } catch (Exception ex) {
-//        }
         try {
             WSServer s = new WSServer(port, mq, sendQ);
             s.start();
@@ -100,31 +93,16 @@ public class WSServer extends WebSocketServer {
 
             BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
-//            String in = sysin.readLine();
-//            String in = "test code";//sysin.readLine();
-//            WSServer.shareBuf.to
-//                Thread.sleep(500);
                 String taskStr = mq.take();
-//                Log.d(WebViewActivity.WVTaskName, taskStr);
                 if (taskStr.length() > 0)  {
                     s.broadcast(taskStr);
-                    currentMsg = taskStr;
+                    currentMsg = taskStr.trim();
                 }
                 Thread.sleep(50);
-//                if (bqInterrupt) {
-//                    Thread.currentThread().interrupt();
-//                }
-//            if (in.equals("exit")) {
-//                s.stop(1000);
-//                break;
-//            }
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-//        finally {
-//            Thread.currentThread().interrupt();
-//        }
     }
 
 }
