@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 
-
 public class WSServer extends WebSocketServer {
 
     public static volatile StringBuffer shareBuf = new StringBuffer();
@@ -62,6 +61,9 @@ public class WSServer extends WebSocketServer {
         queueOfES.put(message);
     }
 
+
+
+
     @Override
     public void onMessage(WebSocket conn, ByteBuffer message) {
         broadcast(message.array());
@@ -85,16 +87,17 @@ public class WSServer extends WebSocketServer {
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
     }
-    public static void startWSServer(MessageQueue mq, MessageQueue sendQ, int port) {
+
+    public static void startWSServer(MessageQueue queueOfInstruct, MessageQueue queueOfES, int port) {
         try {
-            WSServer s = new WSServer(port, mq, sendQ);
+            WSServer s = new WSServer(port, queueOfInstruct, queueOfES);
             s.start();
             System.out.println("ChatServer started on port: " + s.getPort());
 
             BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
-                String taskStr = mq.take();
-                if (taskStr.length() > 0)  {
+                String taskStr = queueOfInstruct.take();
+                if (taskStr.length() > 0) {
                     s.broadcast(taskStr);
                     currentMsg = taskStr.trim();
                 }
@@ -104,5 +107,4 @@ public class WSServer extends WebSocketServer {
             e.printStackTrace();
         }
     }
-
 }
