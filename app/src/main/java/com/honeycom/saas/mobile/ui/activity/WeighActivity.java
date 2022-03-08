@@ -881,6 +881,20 @@ public class WeighActivity extends BaseActivity {
             }
         });
 
+        mNewWeb.registerHandler("sendInstructToES", new BridgeHandler() {
+            @Override
+            synchronized public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "push instruct by jsbridge "+data);
+                try {
+                    DoorOfESSocket.pushMsgByCurrConn(data);
+                    function.onCallBack("done");
+                } catch (Exception e) {
+                    Log.e(TAG, "switchNetwork: error: "+e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+
         //打印
         mNewWeb.registerHandler("printDirect", new BridgeHandler() {
             @Override
