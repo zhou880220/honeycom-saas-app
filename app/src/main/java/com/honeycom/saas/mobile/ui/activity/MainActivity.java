@@ -567,7 +567,7 @@ public class MainActivity  extends BaseActivity {
                             Intent intent;
                             //生成app单独跳转一个页面
                             if (redirectUrl.contains("/p/")) {
-                                intent = new Intent(MainActivity.this, ExecuteActivity.class);
+                                intent = new Intent(MainActivity.this, WeighActivity.class);
                                 if (redirectUrl.contains("?")) {
                                     redirectUrl = redirectUrl +"&r="+new Date().getTime();
                                 }else {
