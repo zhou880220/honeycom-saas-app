@@ -171,7 +171,6 @@ public class WeighActivity extends BaseActivity {
 //    public Thread wsT = null;
 //    public BluetoothServer bts = null;
 
-
     DoorOfESSocket bp = null;
     DoorOfBlueTooth bpp = null;
 
@@ -895,6 +894,20 @@ public class WeighActivity extends BaseActivity {
             }
         });
 
+        mNewWeb.registerHandler("sendInstructToES", new BridgeHandler() {
+            @Override
+            synchronized public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "push instruct by jsbridge "+data);
+                try {
+                    DoorOfESSocket.pushMsgByCurrConn(data);
+                    function.onCallBack("done");
+                } catch (Exception e) {
+                    Log.e(TAG, "switchNetwork: error: "+e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+
         //打印
         mNewWeb.registerHandler("printDirect", new BridgeHandler() {
             @Override
@@ -914,7 +927,6 @@ public class WeighActivity extends BaseActivity {
             @Override
             public void handler(String data, CallBackFunction function) {
                 try {
-                    Log.e(TAG, "createBluetooth: "+data);
                     if (bpp == null) bpp = new DoorOfBlueTooth();
                     if (bpp.initBT(data)) {
                         function.onCallBack("init success.");
@@ -964,6 +976,7 @@ public class WeighActivity extends BaseActivity {
                     function.onCallBack("bt close success.");
                 } catch (Exception e){
                     function.onCallBack("failed.");
+                    e.printStackTrace();
                 }
             }
         });
