@@ -66,6 +66,7 @@ import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
 import com.honeycom.saas.mobile.ws.DoorOfESSocket;
 import com.honeycom.saas.mobile.ws.DoorOfBlueTooth;
+import com.honeycom.saas.mobile.ws.DoorOfPrinterDirect;
 import com.honeycom.saas.mobile.ws.bean.PrintBean;
 import com.honeycom.saas.mobile.ws.DoorOfPrinterBySocket;
 import com.honeycom.saas.mobile.ws.server.WSServer;
@@ -900,18 +901,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printDirect: "+data);
                 try {
-                    Gson gson = new Gson();
-                    PrintBean printBean =  gson.fromJson(data, PrintBean.class);
-                    String test = String.valueOf((int) (Math.random() * 50 + 1));
-                    new Thread(() -> {
-                        DoorOfPrinterBySocket s = new DoorOfPrinterBySocket();
-                        try {
-                            s.run(printBean.getIp(), printBean.getPort(), printBean.getZplString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-                    function.onCallBack("send done " + test + " ,");
+                    DoorOfPrinterDirect.run(data);
+                    function.onCallBack("send done ");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
