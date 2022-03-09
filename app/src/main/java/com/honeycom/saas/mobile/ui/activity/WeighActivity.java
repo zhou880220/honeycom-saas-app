@@ -59,16 +59,16 @@ import com.honeycom.saas.mobile.base.BaseActivity;
 import com.honeycom.saas.mobile.http.bean.BrowserBean;
 import com.honeycom.saas.mobile.util.BaseUtils;
 import com.honeycom.saas.mobile.util.Constant;
-import com.honeycom.saas.mobile.util.NewToastUtil;
 import com.honeycom.saas.mobile.util.SPUtils;
 import com.honeycom.saas.mobile.util.StatusBarCompat;
 import com.honeycom.saas.mobile.util.SystemUtil;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
-import com.honeycom.saas.mobile.ws.DoorOfBlueTooth;
 import com.honeycom.saas.mobile.ws.DoorOfESSocket;
-import com.honeycom.saas.mobile.ws.DoorOfPrinterBySocket;
+import com.honeycom.saas.mobile.ws.DoorOfBlueTooth;
+import com.honeycom.saas.mobile.ws.DoorOfPrinterDirect;
 import com.honeycom.saas.mobile.ws.bean.PrintBean;
+import com.honeycom.saas.mobile.ws.DoorOfPrinterBySocket;
 import com.honeycom.saas.mobile.ws.server.WSServer;
 import com.honeycom.saas.mobile.ws.bean.WeighBean;
 import com.yzq.zxinglibrary.android.CaptureActivity;
@@ -123,7 +123,7 @@ public class WeighActivity extends BaseActivity {
     private static final int REQUEST_PICK = 101;
     private static final String[] APPLY_PERMISSIONS_APPLICATION = { //第三方应用授权
             Manifest.permission.CAMERA,
-//            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int ADDRESS_PERMISSIONS_CODE = 1;
@@ -165,7 +165,7 @@ public class WeighActivity extends BaseActivity {
 
 //    private MessageQueue messageQueue = new MessageQueue(100);
 //    private MessageQueue sendQueue = new MessageQueue(100);
-//
+
 //    public Thread listerT = null;
 //    public Thread senderT = null;
 //    public Thread wsT = null;
@@ -385,6 +385,7 @@ public class WeighActivity extends BaseActivity {
 
             }
         });
+
         /**
          * 传递用户登录信息
          */
@@ -871,8 +872,20 @@ public class WeighActivity extends BaseActivity {
                     if (bp == null) bp = new DoorOfESSocket("6001");
                     if (bp != null) {
                         bp.switchNetwork(weighBean.getIp(), weighBean.getPort());
-//                        Toasty.info(getApplicationContext(), "binding", Toast.LENGTH_SHORT, false).show();
                     }
+                    function.onCallBack("done");
+                } catch (Exception e) {
+                    Log.e(TAG, "switchNetwork: error: "+e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+        mNewWeb.registerHandler("sendInstructToES", new BridgeHandler() {
+            @Override
+            synchronized public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "push instruct by jsbridge "+data);
+                try {
+                    DoorOfESSocket.pushMsgByCurrConn(data);
                     function.onCallBack("done");
                 } catch (Exception e) {
                     Log.e(TAG, "switchNetwork: error: "+e.getMessage());
@@ -901,19 +914,8 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printDirect: "+data);
                 try {
-
-                    Gson gson = new Gson();
-                    PrintBean printBean =  gson.fromJson(data, PrintBean.class);
-                    String test = String.valueOf((int) (Math.random() * 50 + 1));
-                    new Thread(() -> {
-                        DoorOfPrinterBySocket s = new DoorOfPrinterBySocket();
-                        try {
-                            s.run(printBean.getIp(), printBean.getPort(), printBean.getZplString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-                    function.onCallBack("send done " + test + " ,");
+                    DoorOfPrinterDirect.run(data);
+                    function.onCallBack("send done ");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -924,7 +926,6 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("createBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "createBluetooth: "+data);
                 try {
                     if (bpp == null) bpp = new DoorOfBlueTooth();
                     if (bpp.initBT(data)) {
@@ -932,8 +933,8 @@ public class WeighActivity extends BaseActivity {
                         return;
                     }
                     function.onCallBack("failed.");
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Exception e){
+                    function.onCallBack("failed.");
                 }
             }
         });
@@ -942,20 +943,19 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("printByBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "printByBluetooth: start"+data);
                 try {
+                    Log.e(TAG, "printByBluetooth: start" + data);
                     if (bpp == null) {
                         function.onCallBack("print bpp is null.");
                         return;
                     }
-                    if(bpp.BTPrint(data)) {
+                    if (bpp.BTPrint(data)) {
                         function.onCallBack("success.");
                         return;
                     }
                     function.onCallBack("failed.");
-                } catch (Exception e) {
-                    NewToastUtil.showShortToast(getApplicationContext(), "bluetooth lost.");
-                    e.printStackTrace();
+                } catch (Exception e){
+                    function.onCallBack("failed.");
                 }
             }
         });
@@ -964,8 +964,8 @@ public class WeighActivity extends BaseActivity {
         mNewWeb.registerHandler("closeBluetooth", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "closeBluetooth: start"+data);
                 try {
+                    Log.e(TAG, "closeBluetooth: start" + data);
                     if (bpp == null) return;
                     if (bpp == null) {
                         function.onCallBack("close but bpp is null.");
@@ -974,7 +974,8 @@ public class WeighActivity extends BaseActivity {
                     bpp.BTClose();
                     bpp = null;
                     function.onCallBack("bt close success.");
-                } catch (Exception e) {
+                } catch (Exception e){
+                    function.onCallBack("failed.");
                     e.printStackTrace();
                 }
             }
@@ -1032,21 +1033,21 @@ public class WeighActivity extends BaseActivity {
 //                        mApplyBackImage1.setVisibility(View.GONE);
                     } else {
 //                        mApplyBackImage1.setVisibility(View.VISIBLE);
-//                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-//                                != PackageManager.PERMISSION_GRANTED) {
-//                            //申请READ_EXTERNAL_STORAGE权限
-//                            Log.e(TAG, "onCityClick: no permission" );
-//                            ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-//                                    ADDRESS_PERMISSIONS_CODE);
-//                        }
+                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            //申请READ_EXTERNAL_STORAGE权限
+                            Log.e(TAG, "onCityClick: no permission" );
+                            ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                                    ADDRESS_PERMISSIONS_CODE);
+                        }
                     }
                 } catch (Exception e) {
-//                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-//                            != PackageManager.PERMISSION_GRANTED) {
-//                        //申请READ_EXTERNAL_STORAGE权限
-//                        ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-//                                ADDRESS_PERMISSIONS_CODE);
-//                    }
+                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        //申请READ_EXTERNAL_STORAGE权限
+                        ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                                ADDRESS_PERMISSIONS_CODE);
+                    }
 //                    mApplyBackImage1.setVisibility(View.VISIBLE);
                 }
             }
@@ -1103,12 +1104,12 @@ public class WeighActivity extends BaseActivity {
                     Log.e(TAG, "onCityClick: no permission camera" );
                     ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
                             ADDRESS_PERMISSIONS_CODE);
-//                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-//                        != PackageManager.PERMISSION_GRANTED) {
-//                    //申请READ_EXTERNAL_STORAGE权限
-//                    Log.e(TAG, "onCityClick: no permission record" );
-//                    ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-//                            ADDRESS_PERMISSIONS_CODE);
+                }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请READ_EXTERNAL_STORAGE权限
+                    Log.e(TAG, "onCityClick: no permission record" );
+                    ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+                            ADDRESS_PERMISSIONS_CODE);
                 }else if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
                     //申请READ_EXTERNAL_STORAGE权限

@@ -6,14 +6,14 @@ package com.honeycom.saas.mobile.ws.bean;
 public class WeighBean {
 
     private String ip;
-
     private String port;
-
-    private String selfServerPort;
     private String baudrate;
     private String bytesize;
     private String stopbits;
     private String parity;
+
+    private String selfServerPort;
+
 
     public String getIp() {
         return ip;
@@ -38,6 +38,7 @@ public class WeighBean {
     public void setSelfServerPort(String selfServerPort) {
         this.selfServerPort = selfServerPort;
     }
+
 
     public String getBaudrate() { return baudrate; }
     public String getBytesize() { return bytesize; }

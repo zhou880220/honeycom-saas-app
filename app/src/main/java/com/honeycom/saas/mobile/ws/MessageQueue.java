@@ -2,11 +2,7 @@ package com.honeycom.saas.mobile.ws;
 
 import java.util.LinkedList;
 
-/**
- * 自定义消息队列
- */
 public class MessageQueue {
-
 
     private LinkedList<String> list = new LinkedList<>();
 

@@ -4,13 +4,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.ParcelUuid;
-import android.util.Log;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.util.Set;
 
 //import org.apache.commons.io.FileUtils;
@@ -60,14 +57,14 @@ public class BluetoothServer {
                     String deviceName = device.getName();
                     String curaddr = device.getAddress();
                     String deviceHardwareAddress = device.getAddress(); // MAC address
-                    Log.e("BluetoothServer", deviceName);
+                    System.out.println(deviceName);
 //                    if (deviceName.equals("DP-230L-D918")) {
                     if (addr.equals(curaddr)) {
 //                        printTest(device);
                         this.device = device;
                         return "founded";
                     }
-                    Log.e("BluetoothServer", deviceHardwareAddress);
+                    System.out.println(deviceHardwareAddress);
                 }
             }
         }
