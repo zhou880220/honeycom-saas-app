@@ -921,7 +921,7 @@ public class WeighActivity extends BaseActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                function.onCallBack("send done ");
+                function.onCallBack("failed.");
             }
         });
 
