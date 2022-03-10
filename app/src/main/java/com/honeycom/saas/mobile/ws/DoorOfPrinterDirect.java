@@ -8,17 +8,18 @@ import java.net.Socket;
 
 public class DoorOfPrinterDirect {
 
-    public static void run(String data) throws Exception {
+    public static boolean run(String data) throws Exception {
         Gson gson = new Gson();
         PrintBean printBean = gson.fromJson(data, PrintBean.class);
         String test = String.valueOf((int) (Math.random() * 50 + 1));
-        new Thread(() -> {
+//        new Thread(() -> {
             DoorOfPrinterBySocket s = new DoorOfPrinterBySocket();
             try {
-                s.run(printBean.getIp(), printBean.getPort(), printBean.getZplString());
+                return s.run(printBean.getIp(), printBean.getPort(), printBean.getZplString());
             } catch (Exception e) {
                 e.printStackTrace();
+                return false;
             }
-        }).start();
+//        }).start();
     }
 }

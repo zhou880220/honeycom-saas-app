@@ -914,11 +914,14 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.e(TAG, "printDirect: "+data);
                 try {
-                    DoorOfPrinterDirect.run(data);
-                    function.onCallBack("send done ");
+                    if (DoorOfPrinterDirect.run(data)) {
+                        function.onCallBack("send done ");
+                        return;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                function.onCallBack("failed.");
             }
         });
 
