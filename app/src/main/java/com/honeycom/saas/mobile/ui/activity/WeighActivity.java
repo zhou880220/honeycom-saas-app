@@ -915,7 +915,7 @@ public class WeighActivity extends BaseActivity {
                 Log.e(TAG, "printDirect: "+data);
                 try {
                     if (DoorOfPrinterDirect.run(data)) {
-                        function.onCallBack("send done ");
+                        function.onCallBack("success");
                         return;
                     }
                 } catch (Exception e) {
@@ -932,7 +932,7 @@ public class WeighActivity extends BaseActivity {
                 try {
                     if (bpp == null) bpp = new DoorOfBlueTooth();
                     if (bpp.initBT(data)) {
-                        function.onCallBack("init success.");
+                        function.onCallBack("success.");
                         return;
                     }
                     function.onCallBack("failed.");
@@ -950,6 +950,10 @@ public class WeighActivity extends BaseActivity {
                     Log.e(TAG, "printByBluetooth: start" + data);
                     if (bpp == null) {
                         function.onCallBack("print bpp is null.");
+                        return;
+                    }
+                    if (DoorOfBlueTooth.btInitStatus == 0) {
+                        function.onCallBack("打印机初始化不成功.");
                         return;
                     }
                     if (bpp.BTPrint(data)) {
