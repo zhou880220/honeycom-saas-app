@@ -9,6 +9,9 @@ public class DoorOfBlueTooth {
 
     public BluetoothServer bts = null;
 
+    public static int btInitStatus = 0;
+    public static int btPrintStatus = 0;
+
     public boolean initBT(String addr) {
         if (this.bts == null) {
             this.bts = new BluetoothServer();
@@ -19,6 +22,7 @@ public class DoorOfBlueTooth {
                 synchronized (this) {
                     this.bts.lockDevice(addr);
                     this.bts.settleConn();
+                    btInitStatus = 1;
                 }
                 return true;
             } catch (IOException e) {
@@ -35,7 +39,9 @@ public class DoorOfBlueTooth {
 
     public boolean BTPrint(String zplStr) {
         try {
+            if (btPrintStatus == 0) return false;
             this.bts.write(zplStr);
+            btPrintStatus = 1;
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,6 +52,8 @@ public class DoorOfBlueTooth {
     public boolean BTClose() {
         try {
             this.bts.close();
+            btInitStatus = 0;
+            btPrintStatus = 0;
             return true;
         } catch (Exception e) {
             e.printStackTrace();
