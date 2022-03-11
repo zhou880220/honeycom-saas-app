@@ -24,10 +24,10 @@ public class DoorOfPrinterDirect {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                status = 1;
+                status = 0;
             }
         }).start();
         Thread.sleep(500);
-        return status == 0;
+        return status == 1;
     }
 }
