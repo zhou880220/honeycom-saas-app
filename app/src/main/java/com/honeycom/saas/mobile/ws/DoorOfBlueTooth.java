@@ -1,5 +1,7 @@
 package com.honeycom.saas.mobile.ws;
 
+import android.util.Log;
+
 import com.honeycom.saas.mobile.ws.server.BluetoothServer;
 
 import java.io.IOException;
@@ -39,10 +41,14 @@ public class DoorOfBlueTooth {
 
     public boolean BTPrint(String zplStr) {
         try {
-            if (btInitStatus == 0) return false;
-            this.bts.write(zplStr);
-            btInitStatus = 1;
-            return true;
+            synchronized (this) {
+                if (btInitStatus == 0) return false;
+                this.bts.write(zplStr);
+                btInitStatus = 1;
+                Thread.sleep(500);
+                System.out.println("print done");
+                return true;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
