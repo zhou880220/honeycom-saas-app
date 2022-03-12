@@ -54,11 +54,11 @@ public class PushConstants {
      * OPPO后台APP对应的app key
      */
 //    public static final String OPPO_KEY = "填写您在OPPO后台APP对应的app key";
-    public static final String OPPO_KEY = "c39dd561327e484bb1228b5459063022";
+    public static final String OPPO_KEY = "957f1347c87e4e77b764e6bc0240d7de";
 
     /**
      * OPPO后台APP对应的app secret
      */
 //    public static final String OPPO_SECRET = "填写您在OPPO后台APP对应的app secret";
-    public static final String OPPO_SECRET = "a915f817673a45f08065a2236dfe85a7";
+    public static final String OPPO_SECRET = "fea28f9580cb40ce842763a1deeef140";
 }

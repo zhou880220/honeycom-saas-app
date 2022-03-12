@@ -4,11 +4,16 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+import com.honeycom.saas.mobile.push.PushConstants;
 import com.honeycom.saas.mobile.push.PushHelper;
 import com.honeycom.umeng.UmengClient;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.umeng.commonsdk.UMConfigure;
 import com.umeng.commonsdk.utils.UMUtils;
+
+import org.android.agoo.huawei.HuaWeiRegister;
+import org.android.agoo.oppo.OppoRegister;
+import org.android.agoo.xiaomi.MiPushRegistar;
 
 import ren.yale.android.cachewebviewlib.WebViewCacheInterceptor;
 import ren.yale.android.cachewebviewlib.WebViewCacheInterceptorInst;
@@ -46,6 +51,15 @@ public class App extends Application {
         UmengClient.init(this);
         //友盟 推送
         initUmengSDK(this);
+
+        //小米推送集成
+        MiPushRegistar.register(this, PushConstants.MI_ID, PushConstants.MI_KEY, false);
+        //华为推送集成
+        HuaWeiRegister.register(this);
+        //oppo推送集成
+        OppoRegister.register(this, PushConstants.OPPO_KEY, PushConstants.OPPO_SECRET);
+
+
         //下载器
         WebViewCacheInterceptorInst.getInstance().init(new WebViewCacheInterceptor.Builder(this));
     }

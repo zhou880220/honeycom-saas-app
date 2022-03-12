@@ -37,6 +37,11 @@
         android:name="UPDATE_APP_KEY"
         android:value="b35bea014531123f94c3ba7b7afbaad2" />
 
+    <meta-data
+        android:name="com.huawei.hms.client.appid"
+        android:value="appid=105189519"
+        />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -100,7 +105,6 @@
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
