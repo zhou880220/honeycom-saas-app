@@ -114,6 +114,9 @@ dependencies {
     //oppo推送
     api 'com.umeng.umsdk:oppo-umengaccs:1.0.8-fix'
     implementation 'com.umeng.umsdk:oppo-push:3.0.0'
+    //vivo推送
+    api 'com.umeng.umsdk:vivo-umengaccs:1.1.6'
+    implementation 'com.umeng.umsdk:vivo-push:3.0.0.4'
 
 
 

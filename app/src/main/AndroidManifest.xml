@@ -40,6 +40,12 @@
     <meta-data
         android:name="com.huawei.hms.client.appid"
         android:value="105189519" />
+    <meta-data
+        android:name="com.vivo.push.api_key"
+        android:value="0e20a114360040d38a557e2ebb0731e7" />
+    <meta-data
+        android:name="com.vivo.push.app_id"
+        android:value="105522525" />
 
     <application
         android:name=".App"

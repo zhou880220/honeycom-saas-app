@@ -13,6 +13,7 @@ import com.umeng.commonsdk.utils.UMUtils;
 
 import org.android.agoo.huawei.HuaWeiRegister;
 import org.android.agoo.oppo.OppoRegister;
+import org.android.agoo.vivo.VivoRegister;
 import org.android.agoo.xiaomi.MiPushRegistar;
 
 import ren.yale.android.cachewebviewlib.WebViewCacheInterceptor;
@@ -58,7 +59,8 @@ public class App extends Application {
         HuaWeiRegister.register(this);
         //oppo推送集成
         OppoRegister.register(this, PushConstants.OPPO_KEY, PushConstants.OPPO_SECRET);
-
+        //vivo推送集成
+        VivoRegister.register(this);
 
         //下载器
         WebViewCacheInterceptorInst.getInstance().init(new WebViewCacheInterceptor.Builder(this));
