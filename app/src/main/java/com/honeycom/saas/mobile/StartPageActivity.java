@@ -160,34 +160,11 @@ public class StartPageActivity extends BaseActivity {
             handler2.sendMessage(handler2.obtainMessage(-1));
         }
 
-        //获取友盟推送deviceToken
-        String deviceToken = PushAgent.getInstance(this).getRegistrationId();
-        Log.e(TAG, "deviceToken: "+deviceToken);
-        if (TextUtils.isEmpty(deviceToken)) {
-            initPush();
-        }else {
-            SPUtils.getInstance().put("deviceToken", deviceToken);
-        }
+
 
     }
 
-    //初始化推送
-    private void initPush() {
-        Log.e(TAG, "init push: ");
-        PushHelper.init(getApplicationContext());
-        PushAgent.getInstance(getApplicationContext()).register(new UPushRegisterCallback() {
-            @Override
-            public void onSuccess(final String deviceToken) {
-                Log.e(TAG, "init deviceToken: "+deviceToken);
-                SPUtils.getInstance().put("deviceToken", deviceToken);
-            }
 
-            @Override
-            public void onFailure(String code, String msg) {
-                Log.e(TAG, "code:" + code + " msg:" + msg);
-            }
-        });
-    }
 
     @Override
     protected void initClick() {
@@ -195,7 +172,8 @@ public class StartPageActivity extends BaseActivity {
         layoutSkip.setOnClickListener(v -> {
             Log.i(TAG,"skip :");
             continueCount = false;
-            startHome();
+//            startHome();
+            toHome();
 //            finish();
         });
 
@@ -221,8 +199,8 @@ public class StartPageActivity extends BaseActivity {
                                 case R.id.tv_dialog_ok:
                                     SPUtils.getInstance().put("isFirstUse", false);
                                     //这里是一开始的申请权限，不懂可以看我之前的博客
-                                    startHome();
-//                                    toHome();
+//                                    startHome();
+                                    toHome();
                                     break;
                                 case R.id.tv_dialog_no:
                                     finish();
@@ -249,8 +227,8 @@ public class StartPageActivity extends BaseActivity {
         if (timeCount == 3) {//数秒，超过3秒后如果没有网络，则进入下一个页面
             if (!NetworkUtils.isConnected()) {
                 continueCount = false;
-//                toHome();
-                startHome();
+                toHome();
+//                startHome();
             }
             if (ivAdvertising !=null) {
                 ivAdvertising.setVisibility(View.VISIBLE);
@@ -261,8 +239,8 @@ public class StartPageActivity extends BaseActivity {
         }
         if (timeCount == initTimeCount) {
             continueCount = false;
-//            toHome();
-            startHome();
+            toHome();
+//            startHome();
             Log.e(TAG, "countNum: b " );
         }
         return timeCount;

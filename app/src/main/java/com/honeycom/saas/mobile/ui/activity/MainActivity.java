@@ -48,6 +48,7 @@ import com.honeycom.saas.mobile.http.UpdateAppHttpUtil;
 import com.honeycom.saas.mobile.http.bean.BrowserBean;
 import com.honeycom.saas.mobile.http.bean.UserInfoBean;
 import com.honeycom.saas.mobile.http.bean.VersionInfo;
+import com.honeycom.saas.mobile.push.PushHelper;
 import com.honeycom.saas.mobile.util.CleanDataUtils;
 import com.honeycom.saas.mobile.util.Constant;
 import com.honeycom.saas.mobile.util.SPUtils;
@@ -57,6 +58,8 @@ import com.honeycom.saas.mobile.web.MWebChromeClient;
 import com.honeycom.saas.mobile.web.MyHandlerCallBack;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
+import com.umeng.message.PushAgent;
+import com.umeng.message.api.UPushRegisterCallback;
 import com.vector.update_app.UpdateAppManager;
 import com.vector.update_app.listener.ExceptionHandler;
 import com.yzq.zxinglibrary.android.CaptureActivity;
@@ -154,7 +157,17 @@ public class MainActivity  extends BaseActivity {
         }
 
         //加载页面
-        webView(Constant.text_url);
+        webView(Constant.text_url1);
+
+
+        //获取友盟推送deviceToken
+        String deviceToken = PushAgent.getInstance(this).getRegistrationId();
+        Log.e(TAG, "deviceToken: "+deviceToken);
+        if (TextUtils.isEmpty(deviceToken)) {
+            initPush();
+        }else {
+            SPUtils.getInstance().put("deviceToken", deviceToken);
+        }
 
         myHandler.postDelayed(new Runnable() {
             @Override
@@ -162,6 +175,24 @@ public class MainActivity  extends BaseActivity {
                 updateApp();
             }
         }, 5000);
+    }
+
+    //初始化推送
+    private void initPush() {
+        Log.e(TAG, "init push: ");
+        PushHelper.init(getApplicationContext());
+        PushAgent.getInstance(getApplicationContext()).register(new UPushRegisterCallback() {
+            @Override
+            public void onSuccess(final String deviceToken) {
+                Log.e(TAG, "init deviceToken: "+deviceToken);
+                SPUtils.getInstance().put("deviceToken", deviceToken);
+            }
+
+            @Override
+            public void onFailure(String code, String msg) {
+                Log.e(TAG, "code:" + code + " msg:" + msg);
+            }
+        });
     }
 
     //版本更新

@@ -1040,21 +1040,21 @@ public class WeighActivity extends BaseActivity {
 //                        mApplyBackImage1.setVisibility(View.GONE);
                     } else {
 //                        mApplyBackImage1.setVisibility(View.VISIBLE);
-                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                                != PackageManager.PERMISSION_GRANTED) {
-                            //申请READ_EXTERNAL_STORAGE权限
-                            Log.e(TAG, "onCityClick: no permission" );
-                            ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                    ADDRESS_PERMISSIONS_CODE);
-                        }
+//                        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                                != PackageManager.PERMISSION_GRANTED) {
+//                            //申请READ_EXTERNAL_STORAGE权限
+//                            Log.e(TAG, "onCityClick: no permission" );
+//                            ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                    ADDRESS_PERMISSIONS_CODE);
+//                        }
                     }
                 } catch (Exception e) {
-                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        //申请READ_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
-                                ADDRESS_PERMISSIONS_CODE);
-                    }
+//                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO)
+//                            != PackageManager.PERMISSION_GRANTED) {
+//                        //申请READ_EXTERNAL_STORAGE权限
+//                        ActivityCompat.requestPermissions(WeighActivity.this, APPLY_PERMISSIONS_APPLICATION,
+//                                ADDRESS_PERMISSIONS_CODE);
+//                    }
 //                    mApplyBackImage1.setVisibility(View.VISIBLE);
                 }
             }
