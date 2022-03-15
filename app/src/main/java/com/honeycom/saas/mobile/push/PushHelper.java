@@ -1,5 +1,6 @@
 package com.honeycom.saas.mobile.push;
 
+import android.app.Application;
 import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
@@ -14,11 +15,11 @@ import com.umeng.message.UmengNotificationClickHandler;
 import com.umeng.message.api.UPushRegisterCallback;
 import com.umeng.message.entity.UMessage;
 
-//import org.android.agoo.huawei.HuaWeiRegister;
-//import org.android.agoo.mezu.MeizuRegister;
-//import org.android.agoo.oppo.OppoRegister;
-//import org.android.agoo.vivo.VivoRegister;
-//import org.android.agoo.xiaomi.MiPushRegistar;
+import org.android.agoo.huawei.HuaWeiRegister;
+import org.android.agoo.mezu.MeizuRegister;
+import org.android.agoo.oppo.OppoRegister;
+import org.android.agoo.vivo.VivoRegister;
+import org.android.agoo.xiaomi.MiPushRegistar;
 
 /**
  * PushSDK集成帮助类
@@ -96,15 +97,15 @@ public class PushHelper {
      */
     private static void registerDeviceChannel(Context context) {
         //小米通道，填写您在小米后台APP对应的xiaomi id和key
-//        MiPushRegistar.register(context, PushConstants.MI_ID, PushConstants.MI_KEY);
-//        //华为，注意华为通道的初始化参数在minifest中配置
-//        HuaWeiRegister.register((Application) context.getApplicationContext());
-//        //魅族，填写您在魅族后台APP对应的app id和key
-//        MeizuRegister.register(context, PushConstants.MEI_ZU_ID, PushConstants.MEI_ZU_KEY);
-//        //OPPO，填写您在OPPO后台APP对应的app key和secret
-//        OppoRegister.register(context, PushConstants.OPPO_KEY, PushConstants.OPPO_SECRET);
-//        //vivo，注意vivo通道的初始化参数在minifest中配置
-//        VivoRegister.register(context);
+        MiPushRegistar.register(context, PushConstants.MI_ID, PushConstants.MI_KEY);
+        //华为，注意华为通道的初始化参数在minifest中配置
+        HuaWeiRegister.register((Application) context.getApplicationContext());
+        //魅族，填写您在魅族后台APP对应的app id和key
+        MeizuRegister.register(context, PushConstants.MEI_ZU_ID, PushConstants.MEI_ZU_KEY);
+        //OPPO，填写您在OPPO后台APP对应的app key和secret
+        OppoRegister.register(context, PushConstants.OPPO_KEY, PushConstants.OPPO_SECRET);
+        //vivo，注意vivo通道的初始化参数在minifest中配置
+        VivoRegister.register(context);
     }
 
     //推送设置

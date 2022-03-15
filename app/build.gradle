@@ -117,6 +117,9 @@ dependencies {
     //vivo推送
     api 'com.umeng.umsdk:vivo-umengaccs:1.1.6'
     implementation 'com.umeng.umsdk:vivo-push:3.0.0.4'
+    //魅族推送
+    api 'com.umeng.umsdk:meizu-umengaccs:1.1.5'
+    api 'com.umeng.umsdk:meizu-push:4.1.4'
 
 
 

@@ -42,13 +42,13 @@ public class PushConstants {
      * 魅族后台APP对应的xiaomi id
      */
 //    public static final String MEI_ZU_ID = "填写您在魅族后台APP对应的app id";
-    public static final String MEI_ZU_ID = "116090";
+    public static final String MEI_ZU_ID = "147513";
 
     /**
      * 魅族后台APP对应的xiaomi key
      */
 //    public static final String MEI_ZU_KEY = "填写您在魅族后台APP对应的app key";
-    public static final String MEI_ZU_KEY = "9413f9968d654df092afecf4d3782391";
+    public static final String MEI_ZU_KEY = "4c5c58a735a045b78795c08fef471a69";
 
     /**
      * OPPO后台APP对应的app key
