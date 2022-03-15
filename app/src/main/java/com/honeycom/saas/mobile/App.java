@@ -53,16 +53,6 @@ public class App extends Application {
         //友盟 推送
         initUmengSDK(this);
 
-        //小米推送集成
-//        MiPushRegistar.register(this, PushConstants.MI_ID, PushConstants.MI_KEY, false);
-//        //华为推送集成
-//        HuaWeiRegister.register(this);
-//        //oppo推送集成
-//        OppoRegister.register(this, PushConstants.OPPO_KEY, PushConstants.OPPO_SECRET);
-//        //vivo推送集成
-//        VivoRegister.register(this);
-//        //魅族推送集成
-
         //下载器
         WebViewCacheInterceptorInst.getInstance().init(new WebViewCacheInterceptor.Builder(this));
     }

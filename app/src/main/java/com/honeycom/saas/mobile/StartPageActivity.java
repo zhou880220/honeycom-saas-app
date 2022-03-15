@@ -160,34 +160,11 @@ public class StartPageActivity extends BaseActivity {
             handler2.sendMessage(handler2.obtainMessage(-1));
         }
 
-        //获取友盟推送deviceToken
-        String deviceToken = PushAgent.getInstance(this).getRegistrationId();
-        Log.e(TAG, "deviceToken: "+deviceToken);
-        if (TextUtils.isEmpty(deviceToken)) {
-            initPush();
-        }else {
-            SPUtils.getInstance().put("deviceToken", deviceToken);
-        }
+
 
     }
 
-    //初始化推送
-    private void initPush() {
-        Log.e(TAG, "init push: ");
-        PushHelper.init(getApplicationContext());
-        PushAgent.getInstance(getApplicationContext()).register(new UPushRegisterCallback() {
-            @Override
-            public void onSuccess(final String deviceToken) {
-                Log.e(TAG, "init deviceToken: "+deviceToken);
-                SPUtils.getInstance().put("deviceToken", deviceToken);
-            }
 
-            @Override
-            public void onFailure(String code, String msg) {
-                Log.e(TAG, "code:" + code + " msg:" + msg);
-            }
-        });
-    }
 
     @Override
     protected void initClick() {
