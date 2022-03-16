@@ -9,13 +9,13 @@ public class DoorOfPrinterBySocket {
     public boolean run(String ip, String port, String zplStr) throws Exception {
         synchronized (this) {
             boolean res = doPrint(ip, port, zplStr);
-            if (!res) {
-                // 尝试二次打印 避免 目前设备 热机丢数据.
-                Thread.sleep(500);
-                return doPrint(ip, port, zplStr);
-            }
+//            if (!res) {
+//                // 尝试二次打印 避免 目前设备 热机丢数据.
+//                Thread.sleep(500);
+//                return doPrint(ip, port, zplStr);
+//            }
         }
-        return false;
+        return true;
     }
 
     private boolean doPrint(String ip, String port, String zplStr) {
