@@ -58,6 +58,7 @@ import com.honeycom.saas.mobile.web.MWebChromeClient;
 import com.honeycom.saas.mobile.web.MyHandlerCallBack;
 import com.honeycom.saas.mobile.web.MyWebViewClient;
 import com.honeycom.saas.mobile.web.WebViewSetting;
+import com.honeycom.umeng.UmengClient;
 import com.umeng.message.PushAgent;
 import com.umeng.message.api.UPushRegisterCallback;
 import com.vector.update_app.UpdateAppManager;
@@ -159,6 +160,10 @@ public class MainActivity  extends BaseActivity {
         //加载页面
         webView(Constant.text_url1);
 
+        //友盟统计、登录、分享 SDK，
+        UmengClient.init(getApplication());
+        //友盟 推送
+        App.initUmengSDK(getApplication());
 
         //获取友盟推送deviceToken
         String deviceToken = PushAgent.getInstance(this).getRegistrationId();

@@ -48,10 +48,9 @@ public class App extends Application {
 
 //        ARouter.init(this);
 //        ToastUtils.init(this);
-        // 友盟统计、登录、分享 SDK，
-        UmengClient.init(this);
+
         //友盟 推送
-        initUmengSDK(this);
+//        initUmengSDK(this);
 
         //小米推送集成
 //        MiPushRegistar.register(this, PushConstants.MI_ID, PushConstants.MI_KEY, false);
