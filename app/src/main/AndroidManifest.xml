@@ -117,7 +117,8 @@
                 <data
                     android:host="${applicationId}"
                     android:path="/thirdpush"
-                    android:scheme="agoo" />
+                    android:port="8080"
+                    android:scheme="test" />
             </intent-filter>
         </activity>
 
