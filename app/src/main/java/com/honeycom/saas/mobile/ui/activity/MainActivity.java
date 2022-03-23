@@ -157,7 +157,7 @@ public class MainActivity  extends BaseActivity {
         }
 
         //加载页面
-        webView(Constant.text_url);
+        webView(Constant.text_url1+"&r="+new Date().getTime());
 
         //获取友盟推送deviceToken
         String deviceToken = PushAgent.getInstance(this).getRegistrationId();
