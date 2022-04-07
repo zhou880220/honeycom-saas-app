@@ -109,8 +109,8 @@ dependencies {
     api 'com.umeng.umsdk:xiaomi-umengaccs:1.2.8'
     implementation 'com.umeng.umsdk:xiaomi-push:4.9.1'
     //华为推送
-    api 'com.umeng.umsdk:huawei-umengaccs:1.3.6'
-    api 'com.huawei.hms:push:6.1.0.300'
+    api 'com.umeng.umsdk:huawei-umengaccs:1.3.7'
+    api 'com.huawei.hms:push:6.3.0.302'
     //oppo推送
     api 'com.umeng.umsdk:oppo-umengaccs:1.0.8-fix'
     implementation 'com.umeng.umsdk:oppo-push:3.0.0'

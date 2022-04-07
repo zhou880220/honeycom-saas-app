@@ -60,5 +60,5 @@ public class PushConstants {
      * OPPO后台APP对应的app secret
      */
 //    public static final String OPPO_SECRET = "填写您在OPPO后台APP对应的app secret";
-    public static final String OPPO_SECRET = "dff39d2b930e43b7bac63b58022f1326";
+    public static final String OPPO_SECRET = "dff39d2b930e43b7bac63b58022f1326";//"fea28f9580cb40ce842763a1deeef140";
 }

@@ -37,16 +37,6 @@
         android:name="UPDATE_APP_KEY"
         android:value="b35bea014531123f94c3ba7b7afbaad2" />
 
-    <meta-data
-        android:name="com.huawei.hms.client.appid"
-        android:value="105189519" />
-    <meta-data
-        android:name="com.vivo.push.api_key"
-        android:value="0e20a114360040d38a557e2ebb0731e7" />
-    <meta-data
-        android:name="com.vivo.push.app_id"
-        android:value="105522525" />
-
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -159,6 +149,22 @@
         <activity android:name=".ui.activity.ExecuteActivity"  android:theme="@style/AppThemeThree" android:screenOrientation="portrait"/>
 
         <activity android:name=".ui.activity.WeighActivity"  android:theme="@style/AppThemeThree" android:screenOrientation="portrait"/>
+
+
+        <!-- HUAWEI厂商通道 start-->
+        <meta-data
+            android:name="com.huawei.hms.client.appid"
+            android:value="appid=105189519" />
+        <!-- HUAWEI厂商通道 end-->
+
+        <!-- VIVO厂商通道 start-->
+        <meta-data
+            android:name="com.vivo.push.api_key"
+            android:value="0e20a114360040d38a557e2ebb0731e7" />
+        <meta-data
+            android:name="com.vivo.push.app_id"
+            android:value="105522525" />
+        <!-- VIVO厂商通道 end-->
 
     </application>
 
