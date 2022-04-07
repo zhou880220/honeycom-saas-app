@@ -172,7 +172,8 @@ public class StartPageActivity extends BaseActivity {
         layoutSkip.setOnClickListener(v -> {
             Log.i(TAG,"skip :");
             continueCount = false;
-            startHome();
+            toHome();
+//            startHome();
 //            finish();
         });
 
@@ -198,8 +199,8 @@ public class StartPageActivity extends BaseActivity {
                                 case R.id.tv_dialog_ok:
                                     SPUtils.getInstance().put("isFirstUse", false);
                                     //这里是一开始的申请权限，不懂可以看我之前的博客
-                                    startHome();
-//                                    toHome();
+//                                    startHome();
+                                    toHome();
                                     break;
                                 case R.id.tv_dialog_no:
                                     finish();
@@ -226,8 +227,8 @@ public class StartPageActivity extends BaseActivity {
         if (timeCount == 3) {//数秒，超过3秒后如果没有网络，则进入下一个页面
             if (!NetworkUtils.isConnected()) {
                 continueCount = false;
-//                toHome();
-                startHome();
+                toHome();
+//                startHome();
             }
             if (ivAdvertising !=null) {
                 ivAdvertising.setVisibility(View.VISIBLE);
@@ -238,8 +239,8 @@ public class StartPageActivity extends BaseActivity {
         }
         if (timeCount == initTimeCount) {
             continueCount = false;
-//            toHome();
-            startHome();
+            toHome();
+//            startHome();
             Log.e(TAG, "countNum: b " );
         }
         return timeCount;

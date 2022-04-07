@@ -12,10 +12,10 @@ public class Constant {
     /**
      * 测试环境前缀
      * 页面前缀 ：http://mestestwebk8s.zhizaoyun.com:31810/
-     * 接口前缀 ：http://mestestapik8s.zhizaoyun.com:31008  "https://h5-prod.zhizaoyun.com/app-miota-v1/"; //"http://172.16.41.125:9542";//
+     * 接口前缀 ：http://mestestapik8s.zhizaoyun.com:31008  "https://h5-prod.zhizaoyun.com/app-miota-v1/"; //
      */
-    public static final String PAGE_URL = "https://fmtest-app.zhizaoyun.com:30443";//"http://mestestwebk8s.zhizaoyun.com:31811";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]);
-    public static final String INTERFACE_URL =  "https://mestestapik8s.zhizaoyun.com:30443";//"http://mestestapik8s.zhizaoyun.com:31008";
+    public static final String PAGE_URL = "http://172.16.41.125:9542";//"https://fmtest-app.zhizaoyun.com:30443";//"http://mestestwebk8s.zhizaoyun.com:31811";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]);
+    public static final String INTERFACE_URL =  "http://mestestapik8s.zhizaoyun.com:31008";//"https://mestestapik8s.zhizaoyun.com:30443";//
 
     /**
      * 生产环境前缀
