@@ -7,6 +7,8 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.honeycom.saas.mobile.R;
+import com.honeycom.saas.mobile.ui.activity.MainActivity;
+import com.honeycom.saas.mobile.util.Constant;
 import com.umeng.message.UmengNotifyClickActivity;
 
 import org.android.agoo.common.AgooConstants;
@@ -17,7 +19,7 @@ import org.android.agoo.common.AgooConstants;
  */
 public class MfrMessageActivity extends UmengNotifyClickActivity {
 
-    private static final String TAG = "MfrMessageActivity";
+    private static final String TAG = "MfrMessageActivity_TAG";
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -35,12 +37,17 @@ public class MfrMessageActivity extends UmengNotifyClickActivity {
         final String body = intent.getStringExtra(AgooConstants.MESSAGE_BODY);
         Log.d(TAG, "body: " + body);
         if (!TextUtils.isEmpty(body)) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((TextView) findViewById(R.id.tv)).setText(body);
-                }
-            });
+            Intent intent2 = new Intent(getApplicationContext(), MainActivity.class);
+            intent2.putExtra("APP_NOTICE_LIST", Constant.NOTICE_LIST);
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent2);
+            finish();
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    ((TextView) findViewById(R.id.tv)).setText(body);
+//                }
+//            });
         }
     }
 }
