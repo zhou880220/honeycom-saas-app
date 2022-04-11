@@ -581,10 +581,11 @@ public class HomeActivity extends BaseActivity {
             }
         });
 
-//        清除登录信息
+        //清除登录信息
         mNewWeb.registerHandler("clearLoginInfo", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "handler = clearLoginInfo" + data);
                 SPUtils.getInstance().remove("loginData");
                 SPUtils.getInstance().remove("userInfo");
                 String deviceToken = (String) SPUtils.getInstance().get("deviceToken","");
@@ -838,7 +839,7 @@ public class HomeActivity extends BaseActivity {
         paramsMap.put("deviceType", Constant.equipment_type);
         paramsMap.put("platformType", Constant.platform_type);
         String jsonStr = new Gson().toJson(paramsMap);
-        Log.e(TAG, "request api: "+Constant.userPushRelation);
+        Log.e(TAG, "request api: "+Constant.userUnbindRelation);
         Log.e(TAG, "request params: "+jsonStr);
         OkhttpUtil.okHttpPostJson(Constant.userUnbindRelation, jsonStr, headerMap, new CallBackUtil.CallBackString() {
             @Override
@@ -849,6 +850,7 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void onResponse(String response) {
                 Log.e(TAG, "-----onResponse: " + response);
+
             }
         });
     }

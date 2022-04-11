@@ -556,8 +556,11 @@ public class MainActivity  extends BaseActivity {
         mNewWeb.registerHandler("clearLoginInfo", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "handler = clearLoginInfo" + data);
                 SPUtils.getInstance().remove("loginData");
                 SPUtils.getInstance().remove("userInfo");
+                String deviceToken = (String) SPUtils.getInstance().get("deviceToken","");
+                unBindDeviceToken(deviceToken);
                 function.onCallBack("success");
             }
         });
@@ -795,6 +798,34 @@ public class MainActivity  extends BaseActivity {
 //                } else {
 //                    Log.e("StartPageActivity", "服务器系统异常");
 //                }
+            }
+        });
+    }
+
+    /**
+     * 解绑deviceToken
+     * @param deviceToken
+     */
+    private void unBindDeviceToken(String deviceToken){
+        Map<String, String> headerMap =  new HashMap<>();
+        headerMap.put("authorization", "Bearer "+userToken);
+        Map<String, String> paramsMap =  new HashMap<>();
+        paramsMap.put("deviceToken", deviceToken);
+        paramsMap.put("deviceType", Constant.equipment_type);
+        paramsMap.put("platformType", Constant.platform_type);
+        String jsonStr = new Gson().toJson(paramsMap);
+        Log.e(TAG, "request api: "+Constant.userUnbindRelation);
+        Log.e(TAG, "request params: "+jsonStr);
+        OkhttpUtil.okHttpPostJson(Constant.userUnbindRelation, jsonStr, headerMap, new CallBackUtil.CallBackString() {
+            @Override
+            public void onFailure(Call call, Exception e) {
+                Log.e(TAG, "onFailure: "+e.getMessage());
+            }
+
+            @Override
+            public void onResponse(String response) {
+                Log.e(TAG, "-----onResponse: " + response);
+
             }
         });
     }
