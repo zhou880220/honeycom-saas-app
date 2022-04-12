@@ -552,7 +552,7 @@ public class MainActivity  extends BaseActivity {
             }
         });
 
-//        清除登录信息
+        //清除登录信息
         mNewWeb.registerHandler("clearLoginInfo", new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
@@ -560,8 +560,30 @@ public class MainActivity  extends BaseActivity {
                 SPUtils.getInstance().remove("loginData");
                 SPUtils.getInstance().remove("userInfo");
                 String deviceToken = (String) SPUtils.getInstance().get("deviceToken","");
-                unBindDeviceToken(deviceToken);
-                function.onCallBack("success");
+//                unBindDeviceToken(deviceToken);
+                Map<String, String> headerMap =  new HashMap<>();
+                headerMap.put("authorization", "Bearer "+userToken);
+                Map<String, String> paramsMap =  new HashMap<>();
+                paramsMap.put("deviceToken", deviceToken);
+                paramsMap.put("deviceType", Constant.equipment_type);
+                paramsMap.put("platformType", Constant.platform_type);
+                String jsonStr = new Gson().toJson(paramsMap);
+                Log.e(TAG, "request params: "+jsonStr);
+                Log.e(TAG, "request header: "+headerMap);
+                Log.e(TAG, "request api: "+Constant.userUnbindRelation);
+                OkhttpUtil.okHttpPostJson(Constant.userUnbindRelation, jsonStr, headerMap, new CallBackUtil.CallBackString() {
+                    @Override
+                    public void onFailure(Call call, Exception e) {
+                        Log.e(TAG, "onFailure: "+e.getMessage());
+                        function.onCallBack("fail");
+                    }
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e(TAG, "-----onResponse: " + response);
+                        function.onCallBack("success");
+                    }
+                });
             }
         });
 
@@ -814,8 +836,9 @@ public class MainActivity  extends BaseActivity {
         paramsMap.put("deviceType", Constant.equipment_type);
         paramsMap.put("platformType", Constant.platform_type);
         String jsonStr = new Gson().toJson(paramsMap);
-        Log.e(TAG, "request api: "+Constant.userUnbindRelation);
         Log.e(TAG, "request params: "+jsonStr);
+        Log.e(TAG, "request header: "+headerMap);
+        Log.e(TAG, "request api: "+Constant.userUnbindRelation);
         OkhttpUtil.okHttpPostJson(Constant.userUnbindRelation, jsonStr, headerMap, new CallBackUtil.CallBackString() {
             @Override
             public void onFailure(Call call, Exception e) {
