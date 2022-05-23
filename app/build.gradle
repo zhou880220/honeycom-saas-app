@@ -121,6 +121,10 @@ dependencies {
     api 'com.umeng.umsdk:meizu-umengaccs:1.1.5'
     api 'com.umeng.umsdk:meizu-push:4.1.4'
 
+    //m8 肖邦扫描集成
+    implementation files('libs/ReaderManager.jar')
+    //移动pda集成
+    implementation files('libs/ScanManager_V202110201300.jar')
 
 
 }

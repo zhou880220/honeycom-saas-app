@@ -78,5 +78,16 @@ public class Constant {
     public static final String saveH5FilePath = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"h5_zip";//FileUtils.getCachePath()+ File.separator + "h5_zip"+ File.separator ;
     public static final String unH5ZipPath = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
 
+    //扫描条码服务广播
+    //Scanning barcode service broadcast.
+    public static final String SCN_CUST_ACTION_SCODE = "com.scanner.broadcast";
+    //条码扫描数据广播
+    //Barcode scanning data broadcast.
+    public static final String SCN_CUST_EX_SCODE = "scannerdata";
+    //扫描条码结果
+    public static final String SCN_CUST_EX_RESULT = "scanner_data";
+    //移动扫描条码服务广播
+    public static final String SCAN_ACTION = "scan.rcv.message";
+
 
 }

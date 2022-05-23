@@ -5,11 +5,14 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bld.ScanManager;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -53,6 +56,7 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.scanner.impl.ReaderManager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.lzyzsd.jsbridge.BridgeHandler;
@@ -165,6 +169,16 @@ public class ExecuteActivity extends BaseActivity {
 //    private List<RecentlyApps.DataBean> appData;
     private String path;
 
+    //m8 - 物理键扫码
+    private ReaderManager readerManager;
+    private boolean isActive;
+    private int outPutMode;
+    private boolean enableScankey;
+    private int endCharMode;
+    //移动-扫码
+    private ScanManager scanManager;
+    private String barcodeStr;
+
     //Handler
     private Handler handler = new Handler(new Handler.Callback()  {
         @Override
@@ -240,6 +254,24 @@ public class ExecuteActivity extends BaseActivity {
             e.printStackTrace();
         }
         mLodingTime();
+
+        // Register receiver
+        IntentFilter intentFilter = new IntentFilter(Constant.SCN_CUST_ACTION_SCODE);
+        registerReceiver(scanDataReceiver, intentFilter);
+
+        readerManager = ReaderManager.getInstance();
+
+        Log.d(TAG, "-------ScannerService----------onCreate----enableScankey-------" + readerManager);
+        //Initialize scanner configuration
+        initScanner();
+
+        //移动红外扫码
+        scanManager = ScanManager.getDefaultInstance(this);
+        scanManager.setOPMode(0);
+        scanManager.setContinueScan(false);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constant.SCAN_ACTION);
+        registerReceiver(mScanReceiver, filter);
     }
 
 
@@ -777,6 +809,27 @@ public class ExecuteActivity extends BaseActivity {
                 }
             }
         });
+
+
+        /**
+         * 获取物理按键扫描结果
+         */
+        mNewWeb.registerHandler("getScanData", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                Log.e(TAG, "startIntentZing: ");
+                try {
+                    ZxingConfig config = new ZxingConfig();
+                    config.setShowAlbum(false);
+                    Intent intent = new Intent(mContext, CaptureActivity.class);
+                    intent.putExtra(com.yzq.zxinglibrary.common.Constant.INTENT_ZXING_CONFIG, config);
+                    startActivityForResult(intent, REQUEST_CODE_SCAN);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         /**
          * 拨打电话
          */
@@ -1879,6 +1932,124 @@ public class ExecuteActivity extends BaseActivity {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //Initialize scanner's configurations
+        initScanner();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constant.SCAN_ACTION);
+        registerReceiver(mScanReceiver, filter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "-------ScannerService----------onDestroy");
+        //Release resource
+        readerManager.Release();
+        readerManager = null;
+        unregisterReceiver(mScanReceiver);
+    }
+
+
+    private void initScanner() {
+        //1.Check whether turn on scan engine
+        // Return value
+        // false : scan and decode is disable, not work
+        //true: scan and decode is enable
+        isActive = readerManager.GetActive();
+        if (!isActive) {
+            readerManager.SetActive(true);
+//            powerSwitch.setChecked(true);
+        }
+
+        //2.The physical scanning key work or not
+        // Return value isOn
+        //true Scan key can to start scan
+        //false Scan key can not to start scan
+        enableScankey = readerManager.isEnableScankey();
+        Log.d(TAG, "-------ScannerService----------enableScankey---" + enableScankey);
+        if (!enableScankey) {
+            readerManager.setEnableScankey(true);
+//            pauseSwitch.setChecked(true);
+            Log.d(TAG, "-------ScannerService----------isEnableScankey---" + readerManager.isEnableScankey());
+        }
+
+        //3.Get current data output mode:0 means Copy and Paste,1 means Key Emulation，2 means API.
+        outPutMode = readerManager.getOutPutMode();
+        //If the mode is not API, please configure it as mode API，and restore to original mode when destroying activity.
+        if (outPutMode != 2) {
+            readerManager.setOutPutMode(2);
+        }
+        //4. Set up End character:
+        // 0 the end of code add "\n"
+        //1 the end of code add " "
+        //2 the end of code add "\t"
+        //3 NULL
+        if (endCharMode != 3) {
+            //null, no character
+            readerManager.setEndCharMode(3);
+        }
+    }
+
+
+    //The broadcast about transmit scanning data information
+    private BroadcastReceiver scanDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Constant.SCN_CUST_ACTION_SCODE)) {
+                try {
+                    String message = "";
+                    message = intent.getStringExtra(Constant.SCN_CUST_EX_SCODE);
+                    Log.d(TAG, "-------ScannerService----------message = " + message);
+
+                    SPUtils.getInstance().put(Constant.SCN_CUST_EX_RESULT, message);
+
+                    //返回给h5
+                    mNewWeb.callHandler("getInfraredScanResult", message, new CallBackFunction() {
+                        @Override
+                        public void onCallBack(String data) {
+
+                        }
+                    });
+//                    arrayAdapter.add(message);
+                    readerManager.stopScanAndDecode();
+//                    isScan = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
+                }
+            }
+        }
+    };
+
+    private BroadcastReceiver mScanReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            barcodeStr = intent.getStringExtra("barcodeData");
+            Log.d(TAG, "-------ScannerService----------message2 = " + barcodeStr);
+//            int barocodelen = intent.getIntExtra("length", 0);
+//            byte temp = intent.getByteExtra("barcodeType", (byte) 0);
+//            byte[] aimid = intent.getByteArrayExtra("aimid");
+
+            SPUtils.getInstance().put(Constant.SCN_CUST_EX_RESULT, barcodeStr);
+            //返回给h5
+            mNewWeb.callHandler("getInfraredScanResult", barcodeStr, new CallBackFunction() {
+                @Override
+                public void onCallBack(String data) {
+
+                }
+            });
+//            scanManager.stopDecode();
+
+
+        }
+    };
 
 
 
