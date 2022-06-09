@@ -23,8 +23,8 @@ public class Constant {
      * 接口前缀 ：http://indapp-api.zhizaoyun.com
      */
 
-    public static final String PAGE_URL = "https://fm-app.zhizaoyun.com";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
-    public static final String INTERFACE_URL =  "https://indapp-api.zhizaoyun.com";
+    public static final String PAGE_URL = "https://kp-fm-app.zhizaoyun.com";//String.format("https://%s.zhizaoyun.com/", getCurrentDomain()[0]); // 172.16.23.253:3001/";//172.16.23.138:3003/
+    public static final String INTERFACE_URL =  "https://kp-indapp-api.zhizaoyun.com";
 //    public static final String LOCAL_PAGE_URL = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +"fengchaomeiyun" + File.separator +"saas-app"; //FileUtils.getCachePath()+ File.separator + "h5_cache";
       public static final String LOCAL_PAGE_URL = App.getContext().getExternalFilesDir(null) + File.separator +"fengchaomeiyun" + File.separator +"saas-app";
 
