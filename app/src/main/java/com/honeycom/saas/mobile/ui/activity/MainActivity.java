@@ -135,8 +135,8 @@ public class MainActivity  extends BaseActivity {
     private boolean enableScankey;
     private int endCharMode;
     //移动-扫码
-    private ScanManager scanManager;
-    private String barcodeStr;
+//    private ScanManager scanManager;
+//    private String barcodeStr;
 
 
     private MyHandlerCallBack.OnSendDataListener mOnSendDataListener;
@@ -194,10 +194,10 @@ public class MainActivity  extends BaseActivity {
         initScanner();
 
         //移动红外扫码
-        scanManager = ScanManager.getDefaultInstance(this);
-        scanManager.setContinueScan(true);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constant.SCAN_ACTION);
+//        scanManager = ScanManager.getDefaultInstance(this);
+//        scanManager.setContinueScan(true);
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(Constant.SCAN_ACTION);
 //        registerReceiver(mScanReceiver, filter);
 
         myHandler.postDelayed(new Runnable() {
@@ -1292,32 +1292,24 @@ public class MainActivity  extends BaseActivity {
         }
     };
 
-    private BroadcastReceiver mScanReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            barcodeStr = intent.getStringExtra("barcodeData");
-            Log.d(TAG, "-------ScannerService----------message2 = " + barcodeStr);
-//            int barocodelen = intent.getIntExtra("length", 0);
-//            byte temp = intent.getByteExtra("barcodeType", (byte) 0);
-//            byte[] aimid = intent.getByteArrayExtra("aimid");
-
-            SPUtils.getInstance().put(Constant.SCN_CUST_EX_RESULT, barcodeStr);
-            //返回给h5
-            mNewWeb.callHandler("getInfraredScanResult", barcodeStr, new CallBackFunction() {
-                @Override
-                public void onCallBack(String data) {
-
-                }
-            });
-
-//            scanManager.stopDecode();
-//            scanManager.decoderDisconnect();
-
-
-        }
-    };
+//    private BroadcastReceiver mScanReceiver = new BroadcastReceiver() {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//
+//            barcodeStr = intent.getStringExtra("barcodeData");
+//            Log.d(TAG, "-------ScannerService----------message2 = " + barcodeStr);
+//
+//            SPUtils.getInstance().put(Constant.SCN_CUST_EX_RESULT, barcodeStr);
+//            //返回给h5
+//            mNewWeb.callHandler("getInfraredScanResult", barcodeStr, new CallBackFunction() {
+//                @Override
+//                public void onCallBack(String data) {
+//
+//                }
+//            });
+//        }
+//    };
 
 
 }

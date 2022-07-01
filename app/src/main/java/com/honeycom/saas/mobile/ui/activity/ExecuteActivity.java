@@ -255,23 +255,25 @@ public class ExecuteActivity extends BaseActivity {
         }
         mLodingTime();
 
-        // Register receiver
-        IntentFilter intentFilter = new IntentFilter(Constant.SCN_CUST_ACTION_SCODE);
-        registerReceiver(scanDataReceiver, intentFilter);
+        if (Constant.PDA_TYPE == 0) {
+            // Register receiver
+            IntentFilter intentFilter = new IntentFilter(Constant.SCN_CUST_ACTION_SCODE);
+            registerReceiver(scanDataReceiver, intentFilter);
 
-        readerManager = ReaderManager.getInstance();
+            readerManager = ReaderManager.getInstance();
 
-        Log.d(TAG, "-------ScannerService----------onCreate----enableScankey-------" + readerManager);
-        //Initialize scanner configuration
-        initScanner();
-
-        //移动红外扫码
-        scanManager = ScanManager.getDefaultInstance(this);
-        scanManager.setOPMode(0);
-        scanManager.setContinueScan(false);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constant.SCAN_ACTION);
-        registerReceiver(mScanReceiver, filter);
+            Log.d(TAG, "-------ScannerService----------onCreate----enableScankey-------" + readerManager);
+            //Initialize scanner configuration
+            initScanner();
+        } else if (Constant.PDA_TYPE == 0) {
+            //移动红外扫码
+            scanManager = ScanManager.getDefaultInstance(this);
+            scanManager.setOPMode(0);
+            scanManager.setContinueScan(false);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Constant.SCAN_ACTION);
+            registerReceiver(mScanReceiver, filter);
+        }
     }
 
 
@@ -1816,52 +1818,7 @@ public class ExecuteActivity extends BaseActivity {
         uploadMessageAboveL = null;
     }
 
-    //上传头像
-    private void takePhoneUrl(String cropImagePath) {
 
-        accessToken = "Bearer" + " " + token;
-        OkHttpClient client = new OkHttpClient();//创建okhttpClient
-        //创建body类型用于传值
-        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-        File file = new File(cropImagePath);
-        if (file == null) {
-            return;
-        }
-        final MediaType mediaType = MediaType.parse("image/jpeg");//创建媒房类型
-        builder.addFormDataPart("fileObjs", file.getName(), RequestBody.create(mediaType, file));
-        builder.addFormDataPart("fileNames", "");
-        builder.addFormDataPart("bucketName", Constant.bucket_Name);
-        builder.addFormDataPart("folderName", "menu");
-        MultipartBody requestBody = builder.build();
-        final Request request = new Request.Builder()
-                .url(Constant.upload_multifile)
-                .addHeader("Authorization", accessToken)
-                .post(requestBody)
-                .build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-//                String s = response.body().string();
-//                Log.e(TAG, "onResponse: " + s);
-//                Gson gson = new Gson();
-//                PictureUpload pictureUpload = gson.fromJson(s, PictureUpload.class);
-//                if (pictureUpload.getCode() == 200) {
-//                    List<PictureUpload.DataBean> data = pictureUpload.getData();
-//                    Message message = new Message();
-//                    message.what = OPLOAD_IMAGE;
-//                    message.obj = data.get(0).getNewName();
-//                    handler.sendMessage(message);
-//                } else {
-//
-//                }
-            }
-        });
-    }
 
     /**
      * 专为Android4.4设计的从Uri获取文件绝对路径，以前的方法已不好使
@@ -1936,12 +1893,14 @@ public class ExecuteActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        //Initialize scanner's configurations
-        initScanner();
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constant.SCAN_ACTION);
-        registerReceiver(mScanReceiver, filter);
+        if (Constant.PDA_TYPE == 0) {
+            //Initialize scanner's configurations
+            initScanner();
+        }else if (Constant.PDA_TYPE == 1) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Constant.SCAN_ACTION);
+            registerReceiver(mScanReceiver, filter);
+        }
     }
 
     @Override
@@ -1949,9 +1908,12 @@ public class ExecuteActivity extends BaseActivity {
         super.onDestroy();
         Log.d(TAG, "-------ScannerService----------onDestroy");
         //Release resource
-        readerManager.Release();
-        readerManager = null;
-        unregisterReceiver(mScanReceiver);
+        if (Constant.PDA_TYPE == 0) {
+            readerManager.Release();
+            readerManager = null;
+        }else if (Constant.PDA_TYPE == 1) {
+            unregisterReceiver(mScanReceiver);
+        }
     }
 
 

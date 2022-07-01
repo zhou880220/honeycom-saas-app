@@ -264,23 +264,24 @@ public class WeighActivity extends BaseActivity {
         }
         mLodingTime();
 
-        // Register receiver
-        IntentFilter intentFilter = new IntentFilter(Constant.SCN_CUST_ACTION_SCODE);
-        registerReceiver(scanDataReceiver, intentFilter);
+        if (Constant.PDA_TYPE == 0) {
+            // Register receiver
+            IntentFilter intentFilter = new IntentFilter(Constant.SCN_CUST_ACTION_SCODE);
+            registerReceiver(scanDataReceiver, intentFilter);
+            readerManager = ReaderManager.getInstance();
+            Log.d(TAG, "-------ScannerService----------onCreate----enableScankey-------" + readerManager);
+            //Initialize scanner configuration
+            initScanner();
+        } else if (Constant.PDA_TYPE == 0) {
+            //移动红外扫码
+            scanManager = ScanManager.getDefaultInstance(this);
+            scanManager.setOPMode(0);
+            scanManager.setContinueScan(false);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Constant.SCAN_ACTION);
+            registerReceiver(mScanReceiver, filter);
+        }
 
-        readerManager = ReaderManager.getInstance();
-
-        Log.d(TAG, "-------ScannerService----------onCreate----enableScankey-------" + readerManager);
-        //Initialize scanner configuration
-        initScanner();
-
-        //移动红外扫码
-        scanManager = ScanManager.getDefaultInstance(this);
-        scanManager.setOPMode(0);
-        scanManager.setContinueScan(false);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constant.SCAN_ACTION);
-        registerReceiver(mScanReceiver, filter);
     }
 
 
@@ -2090,23 +2091,37 @@ public class WeighActivity extends BaseActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+//        if (Constant.PDA_TYPE == 1) {
+//            unregisterReceiver(mScanReceiver);
+//        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         //Initialize scanner's configurations
-        initScanner();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constant.SCAN_ACTION);
-        registerReceiver(mScanReceiver, filter);
+        if (Constant.PDA_TYPE == 0) {
+            initScanner();
+        }else if (Constant.PDA_TYPE == 1) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Constant.SCAN_ACTION);
+            registerReceiver(mScanReceiver, filter);
+        }
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "-------ScannerService----------onDestroy");
-        //Release resource
-        readerManager.Release();
-        readerManager = null;
-        unregisterReceiver(mScanReceiver);
+        if (Constant.PDA_TYPE == 0) {
+            readerManager.Release();
+            readerManager = null;
+        }else if (Constant.PDA_TYPE == 1) {
+            unregisterReceiver(mScanReceiver);
+        }
     }
 
 
