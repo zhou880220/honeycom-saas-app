@@ -1,5 +1,7 @@
 package com.honeycom.saas.mobile.ws.server;
 
+import android.text.TextUtils;
+
 import com.honeycom.saas.mobile.ws.MessageQueue;
 
 import org.java_websocket.WebSocket;
@@ -24,6 +26,8 @@ public class WSServer extends WebSocketServer {
     MessageQueue queueOfInstruct;
     MessageQueue queueOfES;
     public static String currentMsg = "";
+    // 断开称连接等待时长，单位毫秒
+    private static int millisecond = 0;
 
     public WSServer(int port, MessageQueue queueOfInstruct, MessageQueue queueOfES) throws UnknownHostException {
         super(new InetSocketAddress(port));
@@ -100,6 +104,15 @@ public class WSServer extends WebSocketServer {
                 if (taskStr.length() > 0) {
                     s.broadcast(taskStr);
                     currentMsg = taskStr.trim();
+                    millisecond = 0;
+                }
+                else{
+                    //超过2秒后未接收到称数据时，重量设置为0
+                    if(millisecond >= 2000 && !TextUtils.isEmpty(currentMsg)){
+                        millisecond = 0;
+                        currentMsg = "0";
+                    }
+                    millisecond+=50;
                 }
                 Thread.sleep(50);
             }
