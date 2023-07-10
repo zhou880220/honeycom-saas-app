@@ -12,7 +12,7 @@ public class MessageQueue {
 
     public String take() {
         String message = "";
-        if (!list.isEmpty()) message = list.removeFirst();
+        if (list.size() > 0 ) message = list.removeFirst();
         return message;
     }
 
