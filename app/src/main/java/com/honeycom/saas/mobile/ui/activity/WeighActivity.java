@@ -13,7 +13,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -73,6 +75,8 @@ import com.honeycom.saas.mobile.ws.DoorOfBlueTooth;
 import com.honeycom.saas.mobile.ws.DoorOfPrinterDirect;
 import com.honeycom.saas.mobile.ws.bean.PrintBean;
 import com.honeycom.saas.mobile.ws.DoorOfPrinterBySocket;
+import com.honeycom.saas.mobile.ws.bean.Result;
+import com.honeycom.saas.mobile.ws.server.BluetoothPrintService;
 import com.honeycom.saas.mobile.ws.server.WSServer;
 import com.honeycom.saas.mobile.ws.bean.WeighBean;
 import com.yzq.zxinglibrary.android.CaptureActivity;
@@ -281,7 +285,23 @@ public class WeighActivity extends BaseActivity {
             filter.addAction(Constant.SCAN_ACTION);
             registerReceiver(mScanReceiver, filter);
         }
+        //
+    }
 
+    /**
+     * 切换屏幕
+     * @param cmd
+     */
+    private void changeScreen (int cmd) {
+        if (cmd == 0) {
+            if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        }else {
+            if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+        }
     }
 
 
@@ -380,6 +400,7 @@ public class WeighActivity extends BaseActivity {
                 try {
                     function.onCallBack("{" + "\"" + "version" + "\"" + ":\"" + "Android" + SystemUtil.getSystemVersion() + "\"" + ",\"" + "model" + "\"" + ":\"" + SystemUtil.getSystemModel() + "\"" + "}");
                 } catch (Exception e) {
+                    function.onCallBack("fail");
                     e.printStackTrace();
                 }
             }
@@ -413,6 +434,7 @@ public class WeighActivity extends BaseActivity {
                     Log.e("wangpan", storeData);
                     function.onCallBack(storeData);
                 } catch (Exception e) {
+                    function.onCallBack("fail");
                     e.printStackTrace();
                 }
 
@@ -430,9 +452,11 @@ public class WeighActivity extends BaseActivity {
                     if (!userInfo.isEmpty()) {
                         function.onCallBack(userInfo);
                     } else {
+                        function.onCallBack("success");
                         Toast.makeText(mContext, "获取用户数据异常", Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
+                    function.onCallBack("fail");
                     e.printStackTrace();
                 }
 
@@ -532,7 +556,9 @@ public class WeighActivity extends BaseActivity {
                         SPUtils.getInstance().put("userInfo", data);
                         function.onCallBack("success");
                     }
+                    function.onCallBack("success");
                 } catch (Exception e) {
+                    function.onCallBack("fail");
                     e.printStackTrace();
                 }
             }
@@ -674,7 +700,9 @@ public class WeighActivity extends BaseActivity {
                 try {
                     SPUtils.getInstance().put("apply_url", Constant.login_url);
                     finish();
+                    function.onCallBack("success");
                 } catch (Exception e) {
+                    function.onCallBack("fail");
                     e.printStackTrace();
                 }
             }
@@ -688,8 +716,10 @@ public class WeighActivity extends BaseActivity {
                 try {
                     SPUtils.getInstance().put("apply_url", Constant.text_url);
                     finish();
+                    function.onCallBack("success");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    function.onCallBack("fail");
                 }
             }
         });
@@ -702,6 +732,7 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 Log.i(TAG, "handler: close page");
                 finish();
+                function.onCallBack("success");
             }
         });
         /**
@@ -820,8 +851,10 @@ public class WeighActivity extends BaseActivity {
                     Intent intent = new Intent(mContext, CaptureActivity.class);
                     intent.putExtra(com.yzq.zxinglibrary.common.Constant.INTENT_ZXING_CONFIG, config);
                     startActivityForResult(intent, REQUEST_CODE_SCAN);
+                    function.onCallBack("success");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    function.onCallBack("fail");
                 }
             }
         });
@@ -841,6 +874,7 @@ public class WeighActivity extends BaseActivity {
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                     }
+                    function.onCallBack("success");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -852,17 +886,6 @@ public class WeighActivity extends BaseActivity {
             public void handler(String data, CallBackFunction function) {
                 try {
 //                    gotoSet();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        mNewWeb.registerHandler("shareSDKData", new BridgeHandler() {
-            @Override
-            public void handler(String data, CallBackFunction function) {
-                try {
-                    Log.e(TAG, "shareSDKData: " + data);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -882,6 +905,7 @@ public class WeighActivity extends BaseActivity {
                     Log.e(TAG, "getIP: "+ip);
                     function.onCallBack(wifiIpAddress());
                 } catch (Exception e) {
+                    function.onCallBack("fail");
                     e.printStackTrace();
                 }
             }
@@ -891,6 +915,7 @@ public class WeighActivity extends BaseActivity {
             try {
                 function.onCallBack(WSServer.currentMsg);
             } catch (Exception e) {
+                function.onCallBack("fail");
                 e.printStackTrace();
             }
         });
@@ -951,10 +976,39 @@ public class WeighActivity extends BaseActivity {
                         function.onCallBack("success");
                         return;
                     }
+                    function.onCallBack("failed.");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    function.onCallBack("failed.");
                 }
-                function.onCallBack("failed.");
+            }
+        });
+
+        //蓝牙打印
+        mNewWeb.registerHandler("bluetoothPrint", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                Result result = Result.success();
+                result.setMsg("执行打印成功！");
+                try {
+                    Gson gson = new Gson();
+                    Map map = gson.fromJson(data, Map.class);
+                    String mac = (String) map.get("mac");
+                    String printData = (String) map.get("data");
+                    BluetoothPrintService bluetoothPrintService = new BluetoothPrintService(mac);
+                    result = bluetoothPrintService.loadBluetoothDevice(mac);
+
+                    if (result.getCode() == 200) {
+                        result = bluetoothPrintService.printData(printData);
+                    }
+
+                } catch (Exception e) {
+                    result = Result.failed();
+                    result.setMsg("蓝牙打印异常");
+                    result.setData("蓝牙打印异常：" + e.getMessage());
+                }
+                String jsonStr = new Gson().toJson(result);
+                function.onCallBack(jsonStr);
             }
         });
 
@@ -1017,6 +1071,39 @@ public class WeighActivity extends BaseActivity {
                 } catch (Exception e){
                     function.onCallBack("failed.");
                     e.printStackTrace();
+                }
+            }
+        });
+
+        /**
+         * 切换屏幕，0：横屏；1：竖屏
+         */
+        mNewWeb.registerHandler("changeScreen", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                try {
+                    Log.e(TAG, "changeScreen: start" + data);
+                    changeScreen(Integer.parseInt(data));
+                    function.onCallBack("success.");
+                } catch (Exception e){
+                    e.printStackTrace();
+                    function.onCallBack("failed.");
+                }
+            }
+        });
+
+        /**
+         * 判断设备是否是pad
+         */
+        mNewWeb.registerHandler("checkdevice", new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                try {
+                    Log.e(TAG, "checkdevice: start");
+                    function.onCallBack(String.valueOf(BaseUtils.isPad(mContext)));
+                } catch (Exception e){
+                    e.printStackTrace();
+                    function.onCallBack("failed.");
                 }
             }
         });
@@ -1104,7 +1191,7 @@ public class WeighActivity extends BaseActivity {
                         mLoadingPage.setVisibility(View.GONE);
                         mNewWebProgressbar.setVisibility(View.GONE);
                     } else {
-                        mNewWebProgressbar.setVisibility(View.GONE);
+//                        mNewWebProgressbar.setVisibility(View.GONE);
                     }
                 } else {
                     //进度跳显示
@@ -1775,6 +1862,8 @@ public class WeighActivity extends BaseActivity {
                         String stringExtra = data.getStringExtra(Constant.CODED_CONTENT);
                         Log.e(TAG, "stringExtra length: "+ stringExtra.length());
                         Log.e(TAG, "getCodeUrl: "+ stringExtra);
+
+
 //                        mNewWeb.evaluateJavascript("window.sdk.getCodeUrl(\"" + stringExtra + "\")", new ValueCallback<String>() {
 //                            @Override
 //                            public void onReceiveValue(String value) {
