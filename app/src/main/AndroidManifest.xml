@@ -60,8 +60,7 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:theme="@style/AppThemeThree"
-            android:windowSoftInputMode="adjustNothing|adjustPan|adjustResize">
+            android:theme="@style/AppThemeThree">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

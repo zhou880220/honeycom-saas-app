@@ -7,9 +7,14 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -325,7 +330,29 @@ public class BaseUtils {
         return mapRequest;
     }
 
+    public static String getSysInfo() {
+        String version = System.getProperty("os.version");
+        String name = System.getProperty("os.name");
+        String arch = System.getProperty("os.arch");
+        String userName = System.getProperty("user.name");
+        Log.d("_TAG", "getSys:arch: " + arch + " user.name: " + userName);
+        Log.d("_TAG", "getSys: name: " + name + " version: " + version);
+        Log.d("_TAG", "getSys: 手机名: " + Build.DEVICE   + " HARDWARE: " + Build.FINGERPRINT );
+        Log.d("_TAG", "getSys: 手机名: " + Build.MODEL   + " HARDWARE: " + Build.MANUFACTURER );
+        return "";
+    }
 
+    /*** 是否是平板** @param context 上下文* @return 是平板则返回true，反之返回false*/
+    public static boolean isPad(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics dm = new DisplayMetrics();
+        display.getMetrics(dm);
+        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+        double screenInches = Math.sqrt(x + y); // 屏幕尺寸
+        return screenInches >= 7.0;
+    }
 
 
 }
