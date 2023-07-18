@@ -946,21 +946,7 @@ public class WeighActivity extends BaseActivity {
                     DoorOfESSocket.pushMsgByCurrConn(data);
                     function.onCallBack("done");
                 } catch (Exception e) {
-                    Log.e(TAG, "switchNetwork: error: "+e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        mNewWeb.registerHandler("sendInstructToES", new BridgeHandler() {
-            @Override
-            synchronized public void handler(String data, CallBackFunction function) {
-                Log.e(TAG, "push instruct by jsbridge "+data);
-                try {
-                    DoorOfESSocket.pushMsgByCurrConn(data);
-                    function.onCallBack("done");
-                } catch (Exception e) {
-                    Log.e(TAG, "switchNetwork: error: "+e.getMessage());
+                    Log.e(TAG, "sendInstructToES: error: "+e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -1107,8 +1093,6 @@ public class WeighActivity extends BaseActivity {
                 }
             }
         });
-
-
 
     }
 
